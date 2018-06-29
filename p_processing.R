@@ -64,41 +64,4 @@ dataset2016 <- dummy.data.frame(dataset2016, names=c("purpose"), sep="_")
 dataset2016$grade<-NULL
 dataset2016$sub_grade<-NULL
 ###
-#write.csv(dataset,"newall2016.csv")
-
-
-#######verify data
-testset1<-read.csv("LoanStats_2017Q1.csv")
-testset2<-read.csv("LoanStats_2017Q2.csv")
-testset<-Reduce(function(x, y) merge(x, y, all=TRUE), list(testset1, testset2))
-
-testset<-testset[1:33]
-#2 3 7 8 9 16 17 18 20 21 22 27 28 
-testset<-testset[,-c(2,3,7,8,9,16,17,18,20,21,22,27,28)]
-class(testset)
-tbl_df(testset)
-class(testset)
-# Encoding the target feature as factor
-testset$term = factor(testset$term,
-                      levels = c(" 36 months"," 60 months"),
-                      labels = c(3, 5))
-testset$emp_length = factor(testset$emp_length,
-                            levels= c("n/a","< 1 year",
-                                      "1 year","2 years",
-                                      "3 years","4 years",
-                                      "5 years","6 years",
-                                      "7 years","8 years",
-                                      "9 years","10 years", "10+ years"),
-                            labels=c(0,0.5,1,2,3,4,5,6,7,8,9,10,20))
-testset$loan_status = factor(testset$loan_status,
-                             levels = c("Fully Paid",
-                                        "Default",
-                                        "Charged Off"),
-                             labels = c(0, 1,1))
-
-testset <- dummy.data.frame(testset, names=c("home_ownership"), sep="_")
-testset <- dummy.data.frame(testset, names=c("verification_status"), sep="_")
-testset <- dummy.data.frame(testset, names=c("purpose"), sep="_")
-
-write.csv(testset,"test2017.csv")
-
+write.csv(dataset2016,"newall2016.csv")
