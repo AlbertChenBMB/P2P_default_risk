@@ -72,4 +72,5 @@ trfcm4
 trf_pred5 = predict(rf_class5, newdata = tcluster5[1:10],type = "class")
 trfcm5<-table(tcluster5[,11],trf_pred5)
 trfcm5
-
+###add how to plot cluster center change for low dimention
+plot(x,y,col=kmeans(dataset,5)$cluster, pch=19, cex=2)
