@@ -80,3 +80,4 @@ dataset2016$emp_length<-as.numeric(sub("%","",dataset2016$emp_length))/10
 str(dataset2016)
 ###
 write.csv(dataset2016,"newall2016.csv")
+
