@@ -1,12 +1,23 @@
+str(dataset2016)
+
 ## mRMR
 library(mRMRe)
 set.seed(342)
+sapply(dataset2016, class) # this will show you the classes of all columns in df
+df<-dataset2016
+unfactorize<- c(1:37)
+df[,unfactorize]<-lapply(unfactorize, function(x) as.numeric(as.character(df[,x])))
+
+
+
 # change to mRMR.data
-f_data <- mRMR.data(data = data.frame(mRMRtest))
+f_data <- mRMR.data(data = data.frame(df))
 #target_indices is loan_statule, feature_count is the number we want to select
-results <- mRMR.classic("mRMRe.Filter", data = f_data, target_indices = 31,
+results <- mRMR.classic("mRMRe.Filter", data = f_data, target_indices = 34,
                         feature_count = 10)
 solutions(results)
+
+mRMRresut<-names(df[c(4,10,21,27,28,25,7,15,29,24)])
 #get the results 
 mrmatrix<-results@mi_matrix
 
@@ -18,26 +29,25 @@ library(glmnet)
 # alpha = 0(Ridge) 或 1(Lasso)。lambda = 懲罰值，也就是給權重和的限制 (跟 SVM 中的 C 概念很像)
 # )
 ## output 01~03 is balance data
-dataset1<-read.csv("output01.csv")
-dataset2<-read.csv("output02.csv")
-dataset3<-read.csv("output03.csv")
 #split
+#omitt na
+df<-na.omit(df)
 library(caTools)
 set.seed(456605)
-split = sample.split(datasetforlasso$loan_status, SplitRatio = 0.8)
-training_set = subset(datasetforlasso, split == TRUE)
-testset = subset(datasetforlasso, split == FALSE)
+split = sample.split(df$loan_status, SplitRatio = 0.8)
+training_set = subset(df, split == TRUE)
+testset = subset(df, split == FALSE)
 
-lasso = glmnet(x = as.matrix(training_set[, -30]), 
-               y = training_set[, 30], 
+lasso = glmnet(x = as.matrix(training_set[, -34]), 
+               y = training_set[, 34], 
                alpha = 1,
                family = "binomial")
 
 plot(lasso, xvar='lambda', main="Lasso")
 
 #
-cv.lasso = cv.glmnet(x = as.matrix(training_set[, -30]), 
-                     y = training_set[, 30], 
+cv.lasso = cv.glmnet(x = as.matrix(training_set[, -34]), 
+                     y = training_set[, 34], 
                      alpha = 1,
                      family = "binomial")
 
