@@ -24,46 +24,42 @@ dataset4<-dataset4[,3:145]
 #testset<-read.csv("LoanStats_2018Q1.csv",stringsAsFactors = FALSE,skip = 1)
 #used only dataset4 to try
 str(dataset4)
-
 #merge data
 #all_dataset2016<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
 #select necessary variables
-dataset<-select(dataset4,c(1, 3,4 ,5, 6, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
+dataset<-select(dataset4,c(1, 3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
 #filter loan status to remine Full pay, default, charge off
 dataset<-filter(dataset,loan_status =="Fully Paid"|loan_status =="Charged Off"|loan_status =="Default")
 str(dataset)
 tbl_df(dataset)
-# #time problem rember change in csv
+########################################################################################################
 #Data pre-processing
-# Encoding the target feature as factor
+
+##time problem rember change in csv about term
 dataset$term = factor(dataset$term,
                           levels = c(" 36 months"," 60 months"),
                           labels = c(0.6, 1))
 dataset$term<-as.numeric(levels(dataset$term))[dataset$term]
 
-
-# #time problem rember change in csv
+##time problem rember change in csv about credit age
 dataset$issue_d<-dmy(paste("01-", dataset$issue_d , sep =""))
 dataset$earliest_cr_line<-dmy(paste("01-", dataset$earliest_cr_line , sep =""))
 #creat new variable call credit age
 dataset<-mutate(dataset,
                     credit_age = difftime(dataset$issue_d,dataset$earliest_cr_line,units="weeks"))
-
-
-
+######################################################################################################
+#Add new variable
 #creat new variable call income to payment ratio ITP
 dataset<-mutate(dataset,mic = dataset$annual_inc/12,ITP = (dataset$installment/mic))
 # scale it 
-
 #creat new variable call income to payment ratio RTI
 dataset<-mutate(dataset,RTI =dataset$revol_bal/mic)
-
 
 #delet old variable
 dataset$mic<-NULL
 dataset$revol_bal<-NULL
 ##################################
-
+##Encoding the target feature as factor
 dataset$emp_length = factor(dataset$emp_length,
                                 levels= c("n/a","< 1 year",
                                           "1 year","2 years",
@@ -73,6 +69,7 @@ dataset$emp_length = factor(dataset$emp_length,
                                           "9 years","10 years", "10+ years"),
                                 labels=c(0,0.5,1,2,3,4,5,6,7,8,9,10,20))
 dataset$emp_length<-as.numeric(sub("%","",dataset$emp_length))/10
+
 #remove some variables
 dataset$issue_d<-NULL
 dataset$earliest_cr_line<-NULL
@@ -120,13 +117,9 @@ dataset$revol_util[is.na(dataset$revol_util)]<-mean(dataset$revol_util,na.rm = T
 ##check
 summary(dataset)
 
+######################
+#plot grade and loss, classification and loss
+bwplot(x=label ~grade,data=dataset)
+group_by(dataset,loan_status) %>% summarise(meanloss=mean(label))
+loss<-group_by(dataset,grade) %>% summarise(meanloss=mean(label))
 
-
-##check
-str(dataset)
-
-###add new label
-
-###
-
-write.csv(dataset2016,"newall2016.csv")
