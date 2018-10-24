@@ -1,13 +1,27 @@
 library(dplyr)
 library(data.table)
 library(dummies)
+library(e1071)
 #for time
 library(lubridate)
 #read data for 2016
-dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
-dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE)
-dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE)
-dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
+#######################################################
+#
+# Compare two things:
+#         first: classification
+#         second: LR grade
+########################################################
+dataset1<-read.csv("LoanStats_2017Q1.csv",stringsAsFactors = FALSE,skip = 1,nrows =96780)
+dataset1<-dataset1[,3:145]
+####datase2  have problems
+#dataset2<-read.csv("LoanStats_2017Q2.csv",stringsAsFactors = FALSE,skip = 1,nrows =105453)
+#dataset2<-dataset2[,3:145]
+dataset3<-read.csv("LoanStats_2017Q3.csv",stringsAsFactors = FALSE,skip = 1,nrows =123625)
+dataset3<-dataset3[,3:145]
+dataset4<-read.csv("LoanStats_2017Q4.csv",stringsAsFactors = FALSE,skip = 1,nrows =119552)
+dataset4<-dataset4[,3:145]
+#test dataset
+#testset<-read.csv("LoanStats_2018Q1.csv",stringsAsFactors = FALSE,skip = 1)
 #used only dataset4 to try
 str(dataset4)
 
@@ -20,37 +34,36 @@ dataset<-filter(dataset,loan_status =="Fully Paid"|loan_status =="Charged Off"|l
 str(dataset)
 tbl_df(dataset)
 # #time problem rember change in csv
+#Data pre-processing
+# Encoding the target feature as factor
+dataset$term = factor(dataset$term,
+                          levels = c(" 36 months"," 60 months"),
+                          labels = c(0.6, 1))
+dataset$term<-as.numeric(levels(dataset$term))[dataset$term]
+
+
+# #time problem rember change in csv
 dataset$issue_d<-dmy(paste("01-", dataset$issue_d , sep =""))
 dataset$earliest_cr_line<-dmy(paste("01-", dataset$earliest_cr_line , sep =""))
 #creat new variable call credit age
 dataset<-mutate(dataset,
                     credit_age = difftime(dataset$issue_d,dataset$earliest_cr_line,units="weeks"))
-#scale to dataset
-dataset$credit_age<-log(as.numeric(dataset$credit_age))
-#replace 0 to the NaN result
-dataset$credit_age[is.na(dataset$credit_age)]<-0
-#delet two old variables
-dataset$issue_d<-NULL
-dataset$earliest_cr_line<-NULL
+
+
+
 #creat new variable call income to payment ratio ITP
 dataset<-mutate(dataset,mic = dataset$annual_inc/12,ITP = (dataset$installment/mic))
-dataset$ITP<-log(dataset$ITP)
+# scale it 
+
 #creat new variable call income to payment ratio RTI
 dataset<-mutate(dataset,RTI =dataset$revol_bal/mic)
-dataset$RTI<-log(dataset$RTI)
+
+
 #delet old variable
 dataset$mic<-NULL
 dataset$revol_bal<-NULL
-#normalize to annual income, total amount
-dataset$annual_inc<-log(dataset$annual_inc)
-dataset$loan_amnt<-log(dataset$loan_amnt)
+##################################
 
-
-# Encoding the target feature as factor
-dataset$term = factor(dataset$term,
-                          levels = c(" 36 months"," 60 months"),
-                          labels = c(3, 5))
-dataset$term<-as.numeric(dataset$term)
 dataset$emp_length = factor(dataset$emp_length,
                                 levels= c("n/a","< 1 year",
                                           "1 year","2 years",
@@ -60,21 +73,60 @@ dataset$emp_length = factor(dataset$emp_length,
                                           "9 years","10 years", "10+ years"),
                                 labels=c(0,0.5,1,2,3,4,5,6,7,8,9,10,20))
 dataset$emp_length<-as.numeric(sub("%","",dataset$emp_length))/10
-#remove loanstatuc
-dataset$loan_status <- NULL
+#remove some variables
+dataset$issue_d<-NULL
+dataset$earliest_cr_line<-NULL
 #dummy present (present by 0 or 1)
 dataset <- dummy.data.frame(dataset, names=c("home_ownership"), sep="_")
 dataset <- dummy.data.frame(dataset, names=c("verification_status"), sep="_")
 dataset <- dummy.data.frame(dataset, names=c("purpose"), sep="_")
+
 #change to %numerice
 dataset$int_rate<-as.numeric(sub("%","",dataset$int_rate))/100
 dataset$revol_util<-as.numeric(sub("%","",dataset$revol_util))/100
 dataset$emp_length<-as.numeric(sub("%","",dataset$emp_length))/10
+#creat new variable call return_rate and new label
+dataset<-mutate(dataset,return_rate =(1+dataset$int_rate)^(2*dataset$term))
+dataset<-mutate(dataset,
+                label = ((dataset$funded_amnt_inv*dataset$return_rate)-dataset$total_pymnt_inv)/(dataset$funded_amnt_inv*dataset$return_rate))
+
+#change the label
+loanStatus<-c("Fully Paid"=0,"Default"=1,"Charged Off"=1)
+dataset$loan_status <- loanStatus[dataset$loan_status]
+#check the dataset
+summary(dataset)
+###
+###########################################################################################
+#scale to dataset
+dataset$credit_age<-log(as.numeric(dataset$credit_age))
+#sigmoid
+dataset$ITP<-sigmoid(dataset$ITP)
+dataset$RTI<-sigmoid(dataset$RTI)
+dataset$pub_rec<-sigmoid(dataset$pub_rec)
+#normalize to annual income, total amount
+dataset$installment<-log(dataset$installment)
+dataset$loan_amnt<-log(dataset$loan_amnt)
+dataset$funded_amnt_inv<-log(dataset$funded_amnt_inv)
+dataset$total_acc<-log(dataset$total_acc)
+#scale some
+dataset$annual_inc<-scale(dataset$annual_inc)
+dataset$total_acc<-scale(dataset$total_acc)
+#missing data
+#replace 0 to the NaN result
+dataset$credit_age[is.na(dataset$credit_age)]<-0
+dataset$dti[is.na(dataset$dti)]<-mean(dataset$dti,na.rm = TRUE)
+dataset$RTI[is.na(dataset$RTI)]<-mean(dataset$RTI,na.rm = TRUE)
+dataset$revol_util[is.na(dataset$revol_util)]<-mean(dataset$revol_util,na.rm = TRUE)
+##check
+summary(dataset)
+
+
+
 ##check
 str(dataset)
+
 ###add new label
-dataset<-mutate(dataset,
-                label = (dataset$funded_amnt_inv-dataset$total_pymnt_inv)/dataset$funded_amnt_inv)
+
 ###
 
 write.csv(dataset2016,"newall2016.csv")
