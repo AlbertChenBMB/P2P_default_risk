@@ -11,15 +11,15 @@ library(lubridate)
 #         first: classification
 #         second: LR grade
 ########################################################
-dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
-#dataset1<-dataset1[,3:145]
+dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE,skip = 1)
+dataset1<-dataset1[1:133888,3:145]
 ####datase2  have problems
-dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE)
-#dataset2<-dataset2[,3:145]
-dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE)
-#dataset3<-dataset3[,3:145]
-dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
-#dataset4<-dataset4[,3:145]
+dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE,skip = 1)
+dataset2<-dataset2[1:97855,3:145]
+dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE,skip = 1)
+dataset3<-dataset3[1:99121,3:145]
+dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE,skip = 1)
+dataset4<-dataset4[1:103547,3:145]
 #test dataset
 ver.set<-dataset4
 #used only dataset4 to be test set
