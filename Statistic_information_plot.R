@@ -17,12 +17,17 @@ PD<-mutate(PD,
 PD$term = factor(PD$term,
                       levels = c(" 36 months"," 60 months"),
                       labels = c(0.6, 1))
+#
 PD$term<-as.numeric(levels(PD$term))[PD$term]
 #creat new variable call return_rate and new label
-
+#change to %numerice
+PD$int_rate<-as.numeric(sub("%","",PD$int_rate))/100
 PD<-mutate(PD,return_rate =(1+PD$int_rate)^(2*PD$term))
 PD<-mutate(PD,
               loss_rate = log(PD$total_pymnt_inv/(PD$funded_amnt_inv*PD$return_rate)))
+#replace the loss_rate is small then -1
+inf<-PD$loss_rate<=-1
+PD[inf,25]<- -1
 ##########################################################
 PD = PD %>%
   mutate(loan_outcome = ifelse(loan_status %in% c('Charged Off' , 'Default') , 
@@ -31,19 +36,20 @@ PD = PD %>%
   ))
 ##########################################################
 #plot
-
+par(mfrow=c(1,1))
 #plot different grade
 library(ggplot2)
+#credit age VS loss_rate
+plot(x =PD$credit_age,y = PD$loss_rate )
 #loan_status VS loss_rate
 ggplot( PD,aes(x=loan_status,y=loss_rate,fill=loan_status))+geom_point(aes(color=grade,alpha=0.3))
 ###grade VS loss_rate
 #calculate mean of loss_rate
 
-#replace the loss_rate is small then -1
-inf<-PD$loss_rate<=-1
-PD[inf,26]<- -1
+
 #calculate mean of loss for each grade
 PD %>% group_by(grade) %>%summarise(mean(loss_rate,na.rm = TRUE))
+PD %>% group_by(grade) %>%summarise(sd(loss_rate,na.rm = TRUE))
 
 ggplot( PD,aes(x=grade,y=loss_rate,fill=grade))+geom_boxplot()
 #term VS loss_rate
