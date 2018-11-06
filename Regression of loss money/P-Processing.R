@@ -11,21 +11,25 @@ library(lubridate)
 #         first: classification
 #         second: LR grade
 ########################################################
-dataset1<-read.csv("LoanStats_2017Q1.csv",stringsAsFactors = FALSE,skip = 1,nrows =96780)
-dataset1<-dataset1[,3:145]
+dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
+#dataset1<-dataset1[,3:145]
 ####datase2  have problems
-#dataset2<-read.csv("LoanStats_2017Q2.csv",stringsAsFactors = FALSE,skip = 1,nrows =105453)
+dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE)
 #dataset2<-dataset2[,3:145]
-dataset3<-read.csv("LoanStats_2017Q3.csv",stringsAsFactors = FALSE,skip = 1,nrows =123625)
-dataset3<-dataset3[,3:145]
-dataset4<-read.csv("LoanStats_2017Q4.csv",stringsAsFactors = FALSE,skip = 1,nrows =119552)
-dataset4<-dataset4[,3:145]
+dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE)
+#dataset3<-dataset3[,3:145]
+dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
+#dataset4<-dataset4[,3:145]
 #test dataset
-#testset<-read.csv("LoanStats_2018Q1.csv",stringsAsFactors = FALSE,skip = 1)
-#used only dataset4 to try
+ver.set<-dataset4
+#used only dataset4 to be test set
 str(dataset4)
-#merge data
-#all_dataset2016<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
+#merge data without dataset4
+tra.dataset<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3))
+##############################################################################################################
+
+
+#try only dataset4 first
 #select necessary variables
 dataset<-select(dataset4,c(1, 3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
 #filter loan status to remine Full pay, default, charge off
@@ -86,7 +90,9 @@ dataset$emp_length<-as.numeric(sub("%","",dataset$emp_length))/10
 dataset<-mutate(dataset,return_rate =(1+dataset$int_rate)^(2*dataset$term))
 dataset<-mutate(dataset,
                 label = ((dataset$funded_amnt_inv*dataset$return_rate)-dataset$total_pymnt_inv)/(dataset$funded_amnt_inv*dataset$return_rate))
-
+#replace the loss_rate is small then -1
+inf<-dataset$loss_rate<=-1
+dataset[inf,"loss_rate"]<- -1
 #change the label
 loanStatus<-c("Fully Paid"=0,"Default"=1,"Charged Off"=1)
 dataset$loan_status <- loanStatus[dataset$loan_status]
