@@ -13,33 +13,33 @@ library(lubridate)
 #         first: classification
 #         second: LR grade
 ########################################################
-dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE,skip = 1)
-dataset1<-dataset1[1:133888,3:145]
+dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
+#dataset1<-dataset1[1:133888,3:145]
 ####datase2  have problems
-dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE,skip = 1)
-dataset2<-dataset2[1:97855,3:145]
-dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE,skip = 1)
-dataset3<-dataset3[1:99121,3:145]
-dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE,skip = 1)
-dataset4<-dataset4[1:103547,3:145]
+dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE)
+#dataset2<-dataset2[1:97855,3:145]
+dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE)
+#dataset3<-dataset3[1:99121,3:145]
+dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
+#dataset4<-dataset4[1:103547,3:145]
 #test dataset
 ver.set<-dataset4
 #used only dataset4 to be test set
 str(dataset4)
 #merge data without dataset4
 dataset<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3))
-##############################################################################################################
 
 
-#try only dataset4 first
 #select necessary variables
 ver.set<-select(dataset4,c(3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
-tra.dataset<-select(dataset,c(3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
+##############################################################################################################
+#try only dataset4 first
+tra.dataset<-select(dataset4,c(3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
 #filter loan status to remine Full pay, default, charge off
 tra.dataset<-filter(tra.dataset,loan_status =="Fully Paid"|loan_status =="Charged Off"|loan_status =="Default")
 
-str(dataset)
-tbl_df(dataset)
+str(tra.dataset)
+tbl_df(tra.dataset)
 ########################################################################################################
 #Data pre-processing
 
@@ -68,8 +68,8 @@ B<-tra.dataset$RTI>=4
 tra.dataset[B,"RTI"]<- 4
 tra.dataset$RTI<-normalize(tra.dataset$RTI)
 #delet old variable
-dataset$mic<-NULL
-dataset$revol_bal<-NULL
+tra.dataset$mic<-NULL
+tra.dataset$revol_bal<-NULL
 ##################################
 ##Encoding the target feature as factor
 tra.dataset$emp_length = factor(tra.dataset$emp_length,
@@ -79,7 +79,7 @@ tra.dataset$emp_length = factor(tra.dataset$emp_length,
                                           "5 years","6 years",
                                           "7 years","8 years",
                                           "9 years","10 years", "10+ years"),
-                                labels=c(0,0.5,1,2,3,4,5,6,7,8,9,10,20))
+                                labels=c(0,0.5,1,2,3,4,5,6,7,8,9,9.9,10))
 
 #remove some variables
 tra.dataset$issue_d<-NULL
@@ -97,36 +97,34 @@ tra.dataset$emp_length<-as.numeric(sub("%","",tra.dataset$emp_length))/10
 tra.dataset<-mutate(tra.dataset,return_rate =(1+tra.dataset$int_rate)^(2*tra.dataset$term))
 #treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
 tra.dataset<-mutate(tra.dataset,
-                    loss_rate = log((tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*1.0209)))
+                    loss_rate = (tra.dataset$funded_amnt_inv-tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*1.0209))
 #replace the loss_rate is small then -1
 inf<-tra.dataset$loss_rate<=-1
 tra.dataset[inf,"loss_rate"]<- -1
-#replace the loss_rate is big then 1
-pos<-tra.dataset$loss_rate>=1
-tra.dataset[pos,"loss_rate"]<- 1
+
 #change the label
 loanStatus<-c("Fully Paid"=0,"Default"=1,"Charged Off"=1)
 tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
-tra.dataset$loss_rate<-scale(tra.dataset$loss_rate)
+#tra.dataset$loss_rate<-scale(tra.dataset$loss_rate)
 #check the dataset
 summary(tra.dataset)
 ###
 ###########################################################################################
-#problem: some of data range is too big, can't find suitfor method to scale it
-#scale some data
-tra.dataset$pub_rec<-(tra.dataset$pub_rec)/61
-tra.dataset$total_acc<-(tra.dataset$total_acc)/176
-tra.dataset$delinq_2yrs<-(tra.dataset$total_acc)/21
-
-
-tra.dataset$annual_inc<-scale(tra.dataset$annual_inc)
-tra.dataset$total_acc<-scale(tra.dataset$total_acc)
-tra.dataset$funded_amnt_inv<-scale(tra.dataset$funded_amnt_inv)
-tra.dataset$installment<-scale(tra.dataset$installment)
-#normalize to annual income, total amount
-tra.dataset$credit_age<-log(as.numeric(tra.dataset$credit_age))
-tra.dataset$credit_age[is.na(tra.dataset$credit_age)]<-0
-
+#normalize
+tra.dataset$pub_rec<-normalize(tra.dataset$pub_rec,method="range",range=c(0:1))
+tra.dataset$total_acc<-normalize(tra.dataset$total_acc,method="range",range=c(0:1))
+tra.dataset$delinq_2yrs<-normalize(tra.dataset$delinq_2yrs,method="range",range=c(0:1))
+tra.dataset$annual_inc<-normalize(tra.dataset$annual_inc,method="range",range=c(0:1))
+tra.dataset$total_acc<-normalize(tra.dataset$total_acc,method="range",range=c(0:1))
+tra.dataset$funded_amnt_inv<-normalize(tra.dataset$funded_amnt_inv,method="range",range=c(0:1))
+tra.dataset$installment<-normalize(tra.dataset$installment,method="range",range=c(0:1))
+tra.dataset$RTI<-normalize(tra.dataset$RTI,method="range",range=c(0:1))
+tra.dataset$open_acc<-normalize(tra.dataset$open_acc,method="range",range=c(0:1))
+tra.dataset$dti<-normalize(tra.dataset$dti,method="range",range=c(0:1))
+tra.dataset$inq_last_6mths<-normalize(tra.dataset$inq_last_6mths,method="range",range=c(0:1))
+tra.dataset$dti<-normalize(tra.dataset$dti,method="range",range=c(0:1))
+tra.dataset$revol_util<-normalize(tra.dataset$revol_util,method="range",range=c(0:1))
+tra.dataset$credit_age<-normalize(as.numeric(tra.dataset$credit_age),method="range",range=c(0:1))
 #missing data
 #replace 0 to the NaN result
 
