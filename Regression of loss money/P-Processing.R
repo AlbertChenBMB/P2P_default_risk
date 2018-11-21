@@ -98,10 +98,15 @@ tra.dataset<-mutate(tra.dataset,return_rate =(1+tra.dataset$int_rate)^(2*tra.dat
 #treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
 tra.dataset<-mutate(tra.dataset,
                     loss_rate = (tra.dataset$funded_amnt_inv-tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*1.0209))
+#return rate
+tra.dataset<-mutate(tra.dataset,
+                    gain_rate = (tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*1.0209))
 #replace the loss_rate is small then -1
 inf<-tra.dataset$loss_rate<=-1
 tra.dataset[inf,"loss_rate"]<- -1
-
+#replace the gain_rate is big then 1
+bg<-tra.dataset$gain_rate >=1
+tra.dataset[bg,"gain_rate"]<- 1
 #change the label
 loanStatus<-c("Fully Paid"=0,"Default"=1,"Charged Off"=1)
 tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
