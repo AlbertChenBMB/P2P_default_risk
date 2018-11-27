@@ -10,12 +10,17 @@ m_prob_pred = predict(m_l_classifier, type = 'response',
                     newdata = m_testset[-c(11:13)])
 RMSE( m_testset[13],m_prob_pred )
 
-m_l_pred = ifelse(m_prob_pred >= 0.723, 1, 0)
-m_t_r<-cbind(m_testset,m_l_pred)
+m_l_pred = ifelse(m_prob_pred >= 0.5, 1, 0)# set threshold to classification
+m_t_r<-cbind(m_testset,m_l_pred)#cbind classify label with testset
+
 m_l_fullpay<-filter(m_t_r,m_t_r$m_l_pred==1)
-sum(m_l_fullpay$gain)
+m_l_default<-filter(m_t_r,m_t_r$m_l_pred==0)
+
 mean(m_l_fullpay$gain)
+mean(m_l_default$gain)
+
 quantile(m_l_fullpay$gain)
+quantile(m_l_default$gain)
 #CM
 
 # classification
@@ -26,12 +31,17 @@ m_C_classifier <- glm(formula = loan_status ~.,
 m_C_pred = predict(m_C_classifier, type = 'response', 
                     newdata = m_testset[-c(11:13)])
 RMSE( m_testset[13],m_C_pred  )
-m_c_pred = ifelse(prob_pred >= 0.5, 1, 0)
+m_c_pred = ifelse(prob_pred >= 0.5, 1, 0)# set threshold to classification
 m_c_r<-cbind(testset,c_pred)
+
 m_c_fullpay<-filter(c_r,c_r$c_pred==1)
-sum(m_c_fullpay$gain)
+m_c_default<-filter(c_r,c_r$c_pred==0)
+
 mean(m_c_fullpay$gain)
+mean(m_c_default$gain)
+
 quantile(m_c_fullpay$gain)
+quantile(m_c_default$gain)
 #CM
 ccm = table(testset[, 34], c_pred)
 c_accuracy<- sum(diag(ccm))/sum(ccm)
