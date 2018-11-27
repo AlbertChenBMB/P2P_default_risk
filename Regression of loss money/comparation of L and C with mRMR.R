@@ -51,3 +51,37 @@ cP_A<-ccm[1,1]/(ccm[1,1]+ccm[2,1])
 cGA<-sqrt(cN_A*cP_A)
 cGA
 
+#SVM
+library(e1071)
+s_classifier <- svm(formula = payback_rate ~.,
+                    data = m_L_train,
+                    type = 'eps-regression',
+                    kernel = 'linear')
+# Predicting the Test set results
+s_pred = predict(s_classifier, newdata =  m_testset[-c(11:13)])
+m_s_pred = ifelse(s_pred >= 0.5, 1, 0)
+m_s_r<-cbind(m_testset,m_s_pred)
+RMSE( m_testset[13],s_pred  )
+
+m_s_fullpay<-filter(m_s_r,m_s_r$m_s_pred==1)
+m_s_default<-filter(m_s_r,m_s_r$m_s_pred==0)
+
+mean(m_s_fullpay$gain)
+mean(m_s_default$gain)
+
+quantile(m_s_fullpay$gain)
+quantile(m_s_default$gain)
+
+
+
+
+# Making the Confusion Matrix
+scm = table(testset[, 11], s_pred)
+scm
+s_accuracy<- sum(diag(scm))/sum(scm)
+s_accuracy
+sN_A<-scm[2,2]/(scm[1,2]+scm[2,2])
+sP_A<-scm[1,1]/(scm[1,1]+scm[2,1])
+sGA<-sqrt(sN_A*sP_A)
+sGA
+
