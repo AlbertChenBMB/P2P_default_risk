@@ -105,6 +105,8 @@ tra.dataset[bg,"payback_rate"]<- 1
 #change the label
 loanStatus<-c("Fully Paid"=1,"Default"=0,"Charged Off"=0)
 tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
+#add label 3
+
 #tra.dataset$loss_rate<-scale(tra.dataset$loss_rate)
 #check the dataset
 summary(tra.dataset)
@@ -162,15 +164,23 @@ training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 L_train<-training_set[-c(33,34)]
 C_train<-training_set[-c(33,35)]
-
+dataset<-na.omit(dataset)
 #dataset with mRMR
-m_dataset<-select(dataset,c(3,9,20,26,27,24,6,14,28,23,33,34,35))
-set.seed(366)
-split = sample.split(dataset, SplitRatio = 0.7)
+dataset<-select(dataset,c(3,9,20,26,27,24,6,14,28,23,33,34,35))
+set.seed(37)
+split = sample.split(dataset, SplitRatio = 0.70)
 m_training_set = subset(m_dataset, split == TRUE)
 m_testset = subset(m_dataset, split == FALSE)
 m_L_train<-m_training_set[-c(11,12)]
 m_C_train<-m_training_set[-c(11,13)]
 
 
+# label3 # it's seem no different to payback_rate
+m_g_train<-m_training_set[-c(12,13)]
+
+f<-m_g_train$gain >=0
+d<-m_g_train$gain < 0
+
+m_g_train[f,"gain"]<- 1
+m_g_train[d,"gain"]<- 0
 
