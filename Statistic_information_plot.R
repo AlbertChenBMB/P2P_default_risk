@@ -1,3 +1,5 @@
+library(gmodels)
+CrossTable(dataset1$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,prop.t = FALSE,prop.chisq = FALSE)
 #data plot
 #merge data without dataset4
 dataset2016<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
