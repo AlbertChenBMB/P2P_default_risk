@@ -81,4 +81,5 @@ plot(history, metrics = "mean_squared_error", smooth = FALSE) +
 # paste0("Mean absolute error on test set: $", sprintf("%.2f", mae ))
 ####################
 test_predictions <- model %>% predict(test_data)
-RMSE( m_testset[13],test_predictions )
+RMSE( est_predictions,m_testset[13] )
+

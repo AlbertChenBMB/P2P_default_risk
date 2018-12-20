@@ -8,7 +8,7 @@ m_l_classifier <- glm(formula = payback_rate ~.,
                     data = m_L_train)
 m_prob_pred = predict(m_l_classifier, type = 'response', 
                     newdata = m_testset[-c(11:13)])
-RMSE( m_testset[13],m_prob_pred )
+RMSE( m_prob_pred,m_testset[13] )
 
 m_l_pred = ifelse(m_prob_pred >= 0.5, 1, 0)# set threshold to classification
 m_t_r<-cbind(m_testset,m_l_pred)#cbind classify label with testset
