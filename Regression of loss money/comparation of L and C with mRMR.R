@@ -81,15 +81,27 @@ cGA
 
 #SVM
 library(e1071)
-s_classifier <- svm(formula = payback_rate ~.,
+s_l <- svm(formula = payback_rate ~.,
                     data = m_L_train,
                     type = 'eps-regression',
-                    kernel = 'linear')
+                    kernel = 'radial')
 # Predicting the Test set results
-s_pred = predict(s_classifier, newdata =  m_testset[-c(11:13)])
+s_pred = predict(s_l, newdata =  m_testset[-c(11:13)])
 m_s_pred = ifelse(s_pred >= 0.5, 1, 0)
 m_s_r<-cbind(m_testset,m_s_pred)
 RMSE( m_testset[13],s_pred  )
+############
+s_l_l <- svm(formula = payback_rate ~.,
+           data = m_L_train,
+           type = 'eps-regression',
+           kernel = 'linear')
+# Predicting the Test set results
+s__l_pred = predict(s_l_l, newdata =  m_testset[-c(11:13)])
+RMSE( m_testset[13],s__l_pred  )
+m_s_pred = ifelse(s_pred >= 0.5, 1, 0)
+m_s_r<-cbind(m_testset,m_s_pred)
+
+##################################
 
 m_s_fullpay<-filter(m_s_r,m_s_r$m_s_pred==1)
 m_s_default<-filter(m_s_r,m_s_r$m_s_pred==0)
@@ -109,17 +121,19 @@ quantile(m_s_default$gain)
 library(randomForest)
 set.seed(156)
 #training_set$label<-as.factor(m_L_train$payback_rate)
-rf_class<-randomForest(payback_rate~.,
+rf_l<-randomForest(payback_rate~.,
                        data = na.omit(m_L_train),
-                       ntree=100,
+                       ntree=200,
                        importance=T,
                        do.trace= 10)
-plot(rf_class)
-round(importance(rf_class),2)
-rf_pred = predict(rf_class, newdata = m_testset[-c(11:13)])
+plot(rf_l)
+round(importance(rf_l),2)
+rf_pred = predict(rf_l, newdata = m_testset[-c(11:13)])
+RMSE( m_testset[13],rf_pred  )
+
 m_rf_pred = ifelse(rf_pred >= 0.5, 1, 0)
 m_r_r<-cbind(m_testset,m_rf_pred)
-RMSE( m_testset[13],rf_pred  )
+
 
 m_r_fullpay<-filter(m_r_r,m_r_r$m_rf_pred==1)
 m_r_default<-filter(m_r_r,m_r_r$m_rf_pred==0)

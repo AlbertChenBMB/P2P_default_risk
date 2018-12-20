@@ -27,11 +27,11 @@ dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
 #used only dataset4 to be test set
 #str(dataset4)
 #merge data without dataset4
-dataset<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
+dataset2016<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
 
 ##############################################################################################################
 #
-tra.dataset<-select(dataset,c(3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
+tra.dataset<-select(dataset2016,c(3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
 #filter loan status to remine Full pay, default, charge off
 tra.dataset<-filter(tra.dataset,loan_status =="Fully Paid"|loan_status =="Charged Off"|loan_status =="Default")
 
@@ -95,6 +95,7 @@ tra.dataset<-mutate(tra.dataset,return_rate =(1+tra.dataset$int_rate)^(5*tra.dat
 #treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
 tra.dataset<-mutate(tra.dataset,
                     gain = (tra.dataset$total_pymnt_inv-tra.dataset$funded_amnt_inv)/(tra.dataset$funded_amnt_inv*1.0209^tra.dataset$term))
+
 #payback rate we use return rate to calculate
 tra.dataset<-mutate(tra.dataset,
                     payback_rate = (tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*return_rate))
@@ -111,7 +112,8 @@ tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
 #check the dataset
 summary(tra.dataset)
 RF_data<-tra.dataset
-###
+### export this dataset for randomforest
+
 ###########################################################################################
 #normalize
 tra.dataset$pub_rec<-normalize(tra.dataset$pub_rec,method="range",range=c(0:1))
@@ -150,37 +152,43 @@ hist(tra.dataset$payback_rate,main = "2016 payback distribution",xlab = "Pay bac
 #################
 #for different dataset
 
-#test.dataset<-tra.dataset[sample(nrow(tra.dataset)),]
+
 str(tra.dataset)
 dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
                               11,12,13,14,15,16,
                               17,18,19,20,21,22,
                               23,24,25,26,27,28,29,30,31,32,
                               38,40,35,41))
+
+#training dataset
+#for classification 
+#1. all features <- C_train & testset
+#2. mRMR         <- m_C_train & m_testset
+
+#for regression 
+#1. all features <- L_train & testset
+#2. mRMR         <- m_L_train & m_testset
+
 library(caTools)
 set.seed(456605)
-split = sample.split(dataset, SplitRatio = 0.8)
+split = sample.split(dataset, SplitRatio = 0.7)
 training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 L_train<-training_set[-c(33,34)]
 C_train<-training_set[-c(33,35)]
 dataset<-na.omit(dataset)
+
 #dataset with mRMR
-dataset<-select(dataset,c(3,9,20,26,27,24,6,14,28,23,33,34,35))
+m_dataset<-select(dataset,c(3,9,20,26,27,24,6,14,28,23,33,34,35))
 set.seed(37)
-split = sample.split(dataset, SplitRatio = 0.70)
+split = sample.split(m_dataset, SplitRatio = 0.70)
 m_training_set = subset(m_dataset, split == TRUE)
 m_testset = subset(m_dataset, split == FALSE)
+
 m_L_train<-m_training_set[-c(11,12)]
 m_C_train<-m_training_set[-c(11,13)]
 
-
-# label3 # it's seem no different to payback_rate
-m_g_train<-m_training_set[-c(12,13)]
-
-f<-m_g_train$gain >=0
-d<-m_g_train$gain < 0
-
-m_g_train[f,"gain"]<- 1
-m_g_train[d,"gain"]<- 0
+#export dataset
+write.csv(m_L_train,"m_L_train.csv")
+write.csv(m_testset,"m_test.csv")
 

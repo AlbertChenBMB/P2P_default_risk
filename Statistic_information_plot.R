@@ -1,15 +1,20 @@
 library(gmodels)
 CrossTable(dataset1$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,prop.t = FALSE,prop.chisq = FALSE)
+CrossTable(dataset2$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,prop.t = FALSE,prop.chisq = FALSE)
+CrossTable(dataset3$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,prop.t = FALSE,prop.chisq = FALSE)
+CrossTable(dataset4$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,prop.t = FALSE,prop.chisq = FALSE)
 #data plot
 #merge data without dataset4
 dataset2016<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
+#
+
 PD<-select(dataset2016,c(1, 3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
 #filter loan status to remine Full pay, default, charge off
 PD<-filter(PD,loan_status =="Fully Paid"|loan_status =="Charged Off"|loan_status =="Default")
 str(PD)
 tbl_df(PD)
 ########
-##time problem rember change in csv about credit age
+##time problem rember change in csv about credit age1``
 PD$issue_d<-dmy(paste("01-", PD$issue_d , sep =""))
 PD$earliest_cr_line<-dmy(paste("01-", PD$earliest_cr_line , sep =""))
 #creat new variable call credit age
