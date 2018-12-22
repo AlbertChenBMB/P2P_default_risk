@@ -1,4 +1,8 @@
-#basic logistic regression 
+#basic logistic regression
+#dataset
+X=m_training_set[1:10]
+y=m_training_set[12]
+ny=m_training_set[13]
 #sigmoid
 my_sigmoid<-function(z){
         1/(1+exp(-z))
@@ -28,6 +32,6 @@ my_gradient<-function(theta,X,ny,lambda){
 # initial_theta
 initial_theta=matrix(rep(0,ncol(X)))
 #training model
-optimized=optim(par=initial_theta,X=X,y=y,ny=, labmda=1,fn=my_cost,gr=my_gradient,method="BFGS")
+optimized=optim(par=initial_theta,X=X,y=y,ny=ny, labmda=1,fn=my_cost,gr=my_gradient,method="BFGS")
 
 #test
