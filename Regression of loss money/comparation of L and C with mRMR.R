@@ -80,6 +80,7 @@ cGA<-sqrt(cN_A*cP_A)
 cGA
 
 #SVM
+#reference https://rpubs.com/skydome20/R-Note14-SVM-SVR
 library(e1071)
 s_l <- svm(formula = payback_rate ~.,
                     data = m_L_train,
