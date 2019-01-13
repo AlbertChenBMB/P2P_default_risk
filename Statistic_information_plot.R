@@ -73,3 +73,11 @@ ggplot(PD,aes(x=dti,y=loss_rate))+geom_point(aes(color=term),alpha=0.3)+coord_ca
 #revol
 ggplot(PD,aes(x=return_rate,y=loss_rate))+geom_point(aes(color=grade,alpha=0.3))
 
+
+###
+plotdata<-testset
+plotdata$term<-as.factor(plotdata$term)
+ggplot( plotdata,aes(x=int_rate ,y=payback_rate,fill=term))+
+        geom_point(aes(shape=term,color=term,alpha=0.2),size=2)+
+        xlab("Interest Rate")+ylab("NRR")
+        

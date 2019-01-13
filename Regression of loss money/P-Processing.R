@@ -91,6 +91,7 @@ tra.dataset$int_rate<-as.numeric(sub("%","",tra.dataset$int_rate))/100
 tra.dataset$revol_util<-as.numeric(sub("%","",tra.dataset$revol_util))/100
 tra.dataset$emp_length<-as.numeric(sub("%","",tra.dataset$emp_length))/10
 #creat new variable call return_rate and loss_rate 
+
 tra.dataset<-mutate(tra.dataset,return_rate =(1+tra.dataset$int_rate)^(5*tra.dataset$term))
 #treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
 tra.dataset<-mutate(tra.dataset,
@@ -191,4 +192,6 @@ m_C_train<-m_training_set[-c(11,13)]
 #export dataset
 write.csv(m_L_train,"m_L_train.csv")
 write.csv(m_testset,"m_test.csv")
+
+
 
