@@ -117,23 +117,23 @@ RF_data<-tra.dataset
 
 ###########################################################################################
 #normalize
-tra.dataset$pub_rec<-normalize(tra.dataset$pub_rec,method="range",range=c(0:1))
-tra.dataset$installment<-normalize(tra.dataset$installment,method="range",range=c(0:1))
-tra.dataset$total_acc<-normalize(tra.dataset$total_acc,method="range",range=c(0:1))
-tra.dataset$delinq_2yrs<-normalize(tra.dataset$delinq_2yrs,method="range",range=c(0:1))
-tra.dataset$annual_inc<-normalize(tra.dataset$annual_inc,method="range",range=c(0:1))
-tra.dataset$total_acc<-normalize(tra.dataset$total_acc,method="range",range=c(0:1))
-tra.dataset$funded_amnt_inv<-normalize(tra.dataset$funded_amnt_inv,method="range",range=c(0:1))
-tra.dataset$installment<-normalize(tra.dataset$installment,method="range",range=c(0:1))
-tra.dataset$RTI<-normalize(tra.dataset$RTI,method="range",range=c(0:1))
-tra.dataset$open_acc<-normalize(tra.dataset$open_acc,method="range",range=c(0:1))
-tra.dataset$dti<-normalize(tra.dataset$dti,method="range",range=c(0:1))
-tra.dataset$inq_last_6mths<-normalize(tra.dataset$inq_last_6mths,method="range",range=c(0:1))
-tra.dataset$dti<-normalize(tra.dataset$dti,method="range",range=c(0:1))
-tra.dataset$revol_util<-normalize(tra.dataset$revol_util,method="range",range=c(0:1))
-tra.dataset$credit_age<-normalize(as.numeric(tra.dataset$credit_age),method="range",range=c(0:1))
-tra.dataset$revol_util<-normalize(tra.dataset$revol_util,method="range",range=c(0:1))
-tra.dataset$RTI<-normalize(tra.dataset$RTI,method="range",range=c(0:1))
+tra.dataset$pub_rec<-BBmisc::normalize(tra.dataset$pub_rec,method="range",range=c(0:1))
+tra.dataset$installment<-BBmisc::normalize(tra.dataset$installment,method="range",range=c(0:1))
+tra.dataset$total_acc<-BBmisc::normalize(tra.dataset$total_acc,method="range",range=c(0:1))
+tra.dataset$delinq_2yrs<-BBmisc::normalize(tra.dataset$delinq_2yrs,method="range",range=c(0:1))
+tra.dataset$annual_inc<-BBmisc::normalize(tra.dataset$annual_inc,method="range",range=c(0:1))
+tra.dataset$total_acc<-BBmisc::normalize(tra.dataset$total_acc,method="range",range=c(0:1))
+tra.dataset$funded_amnt_inv<-BBmisc::normalize(tra.dataset$funded_amnt_inv,method="range",range=c(0:1))
+tra.dataset$installment<-BBmisc::normalize(tra.dataset$installment,method="range",range=c(0:1))
+tra.dataset$RTI<-BBmisc::normalize(tra.dataset$RTI,method="range",range=c(0:1))
+tra.dataset$open_acc<-BBmisc::normalize(tra.dataset$open_acc,method="range",range=c(0:1))
+tra.dataset$dti<-BBmisc::normalize(tra.dataset$dti,method="range",range=c(0:1))
+tra.dataset$inq_last_6mths<-BBmisc::normalize(tra.dataset$inq_last_6mths,method="range",range=c(0:1))
+tra.dataset$dti<-BBmisc::normalize(tra.dataset$dti,method="range",range=c(0:1))
+tra.dataset$revol_util<-BBmisc::normalize(tra.dataset$revol_util,method="range",range=c(0:1))
+tra.dataset$credit_age<-BBmisc::normalize(as.numeric(tra.dataset$credit_age),method="range",range=c(0:1))
+tra.dataset$revol_util<-BBmisc::normalize(tra.dataset$revol_util,method="range",range=c(0:1))
+tra.dataset$RTI<-BBmisc::normalize(tra.dataset$RTI,method="range",range=c(0:1))
 #missing data
 #replace 0 to the NaN result
 
@@ -169,7 +169,7 @@ dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
 #for regression 
 #1. all features <- L_train & testset
 #2. mRMR         <- m_L_train & m_testset
-
+dataset<-na.omit(dataset)
 library(caTools)
 set.seed(456605)
 split = sample.split(dataset, SplitRatio = 0.7)
@@ -177,7 +177,7 @@ training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 L_train<-training_set[-c(33,34)]
 C_train<-training_set[-c(33,35)]
-dataset<-na.omit(dataset)
+
 
 #dataset with mRMR
 m_dataset<-select(dataset,c(3,9,20,26,27,24,6,14,28,23,33,34,35))

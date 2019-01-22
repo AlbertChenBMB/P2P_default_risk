@@ -10,9 +10,11 @@ mean(fullpat$gain)
 quantile(fullpat$gain)
 
 library(caret)
-l_classifier <- glm(formula = payback_rate ~.,
-                    family = binomial,
-                    data = L_train)
+
+system.time(l_classifier <-glm(formula = payback_rate ~.,
+                family = binomial,
+                data = L_train))
+options(l_classifier)
 summary(l_classifier)
 prob_pred = predict(l_classifier, type = 'response', 
                     newdata = testset[-c(33:35)])
@@ -26,10 +28,10 @@ mean(l_fullpay$payback_rate)
 #SVM
 #reference https://rpubs.com/skydome20/R-Note14-SVM-SVR
 library(e1071)
-s_l <- svm(formula = payback_rate ~.,
+system.time(s_l <- svm(formula = payback_rate ~.,
            data = L_train,
            type = 'eps-regression',
-           kernel = 'radial')
+           kernel = 'radial'))
 # Predicting the Test set results
 s_pred = predict(s_l, newdata =  testset[-c(33:35)])
 RMSE( testset[35],s_pred  )
@@ -43,15 +45,16 @@ library(randomForest)
 set.seed(156)
 #training_set$label<-as.factor(m_L_train$payback_rate)
 #names problems
-#names(testset)[12]<-"verification_status_Source_Verified"
-#names(L_train)[12]<-"verification_status_Source_Verified"
-#names(L_train)[11]<-"verification_status_Not_Verified"
-#names(testset)[11]<-"verification_status_Not_Verified"
-rf_l<-randomForest(payback_rate~.,
+names(testset)[12]<-"verification_status_Source_Verified"
+names(L_train)[12]<-"verification_status_Source_Verified"
+names(L_train)[11]<-"verification_status_Not_Verified"
+names(testset)[11]<-"verification_status_Not_Verified"
+system.time(rf_l<-randomForest(payback_rate~.,
                    data = L_train,
                    ntree=200,
                    importance=T,
-                   do.trace= 10)
+                   do.trace= 10
+                   ))
 plot(rf_l)
 round(importance(rf_l),2)
 rf_pred = predict(rf_l, newdata = testset[-c(33:35)])
@@ -68,9 +71,9 @@ summary(r_fullpay$payback_rate)
 install.packages("CHAID", repos="http://R-Forge.R-project.org")
 library(rpart)
 #anova for regression tree
-cart  <- rpart(payback_rate~. ,
+system.time(cart  <- rpart(payback_rate~. ,
                method = "anova",
-                  data=L_train)
+                  data=L_train))
 
 rpart.plot::rpart.plot(cart)
 plotcp(cart)
