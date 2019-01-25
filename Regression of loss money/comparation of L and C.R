@@ -1,13 +1,6 @@
 #for all features
 # regression
 
-mean(tra.dataset$payback_rate)
-testset<-na.omit(testset)
-testset$loan_status<-as.numeric(testset$loan_status)
-fullpat<-filter(testset,testset$loan_status==1)
-summary(fullpat$payback_rate)
-mean(fullpat$gain)
-quantile(fullpat$gain)
 
 library(caret)
 

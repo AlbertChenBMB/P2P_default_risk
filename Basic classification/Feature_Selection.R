@@ -1,11 +1,11 @@
-str(dataset2016)
+str(dataset)
 
 ## mRMR
 library(mRMRe)
 set.seed(342)
-sapply(dataset2016, class) # this will show you the classes of all columns in df
-df<-dataset2016
-unfactorize<- c(1:37)
+sapply(dataset, class) # this will show you the classes of all columns in df
+df<-dataset[-c(34,36)]
+unfactorize<- c(1:34)
 df[,unfactorize]<-lapply(unfactorize, function(x) as.numeric(as.character(df[,x])))
 
 
@@ -13,11 +13,11 @@ df[,unfactorize]<-lapply(unfactorize, function(x) as.numeric(as.character(df[,x]
 # change to mRMR.data
 f_data <- mRMR.data(data = data.frame(df))
 #target_indices is loan_statule, feature_count is the number we want to select
-results <- mRMR.classic("mRMRe.Filter", data = f_data, target_indices = 34,
+results <- mRMR.classic("mRMRe.Filter", data = f_data, target_indices = 33,
                         feature_count = 10)
 solutions(results)
 
-mRMRresut<-names(df[c(4,10,21,27,28,25,7,15,29,24)])
+mRMRresut<-names(df[c(31,26,32,29,15,30,27,17,19,2)])
 #get the results 
 mrmatrix<-results@mi_matrix
 

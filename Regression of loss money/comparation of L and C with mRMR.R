@@ -1,18 +1,18 @@
 #for featureselection
 # regression
 #C_train L_train testset 
-m_testset<-na.omit(m_testset)
+
 library(caret)
 
-m_l_classifier <- glm(formula = payback_rate ~.,
+l_classifier <- glm(formula = payback_rate ~.,
                     family = binomial,
-                    data = m_L_train)
-summary(m_l_classifier)
-m_prob_pred = predict(m_l_classifier, type = 'response', 
-                    newdata = m_testset[-c(11:13)])
-RMSE( m_prob_pred,m_testset[13] )
+                    data = mRMR)
+summary(l_classifier)
+m_prob_pred = predict(l_classifier, type = 'response', 
+                    newdata = m_test[-c(11)])
+RMSE( m_prob_pred,m_test[11] )
 
-m_l_pred = ifelse(m_prob_pred >= 0.7, 1, 0)# set threshold to classification
+m_l_pred = ifelse(m_prob_pred >= 0.5, 1, 0)# set threshold to classification
 m_t_r<-cbind(m_testset,m_l_pred)#cbind classify label with testset
 
 m_l_fullpay<-filter(m_t_r,m_t_r$m_l_pred==1)
@@ -69,6 +69,10 @@ summary(m_s_fullpay)
 #randomForest
 library(randomForest)
 set.seed(156)
+names(testset)[12]<-"verification_status_Source_Verified"
+names(L_train)[12]<-"verification_status_Source_Verified"
+names(L_train)[11]<-"verification_status_Not_Verified"
+names(testset)[11]<-"verification_status_Not_Verified"
 #training_set$label<-as.factor(m_L_train$payback_rate)
 rf_l<-randomForest(payback_rate~.,
                        data = na.omit(m_L_train),

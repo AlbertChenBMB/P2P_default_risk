@@ -140,7 +140,7 @@ tra.dataset$RTI<-BBmisc::normalize(tra.dataset$RTI,method="range",range=c(0:1))
 tra.dataset$dti[is.na(tra.dataset$dti)]<-mean(tra.dataset$dti,na.rm = TRUE)
 tra.dataset$revol_util[is.na(tra.dataset$revol_util)]<-mean(tra.dataset$revol_util,na.rm = TRUE)
 tra.dataset$inq_last_6mths[is.na(tra.dataset$inq_last_6mths)]<-0
-na.omit(tra.dataset)
+tra.dataset<-na.omit(tra.dataset)
 ##check
 summary(tra.dataset)
 #information
@@ -159,7 +159,7 @@ dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
                               11,12,13,14,15,16,
                               17,18,19,20,21,22,
                               23,24,25,26,27,28,29,30,31,32,
-                              38,40,35,41))
+                              37,38,40,35,41))
 
 #training dataset
 #for classification 
@@ -169,25 +169,24 @@ dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
 #for regression 
 #1. all features <- L_train & testset
 #2. mRMR         <- m_L_train & m_testset
+#################
 dataset<-na.omit(dataset)
 library(caTools)
 set.seed(456605)
 split = sample.split(dataset, SplitRatio = 0.7)
 training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
-L_train<-training_set[-c(33,34)]
-C_train<-training_set[-c(33,35)]
+L_train<-training_set[-c(34,35)]
 
-
+################################################################
+#for new feature selection
+#for featureselection 
+mRMR<-training_set[c(31,26,32,29,15,30,27,17,19,2,36)]
+LASSO<-training_set[c(2,  3,  5,  7 , 9 ,10 ,11 ,13, 14, 16, 17 ,18, 19, 20 ,21 ,22, 23 ,24, 25, 26, 27 ,28, 29, 30 ,31, 32, 33,36)]
 #dataset with mRMR
-m_dataset<-select(dataset,c(3,9,20,26,27,24,6,14,28,23,33,34,35))
-set.seed(37)
-split = sample.split(m_dataset, SplitRatio = 0.70)
-m_training_set = subset(m_dataset, split == TRUE)
-m_testset = subset(m_dataset, split == FALSE)
+m_test<-testset[c(31,26,32,29,15,30,27,17,19,2,36)]
+l_test<-testset[c(2, 3, 5,7,9,10,11,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,36)]
 
-m_L_train<-m_training_set[-c(11,12)]
-m_C_train<-m_training_set[-c(11,13)]
 
 #export dataset
 write.csv(m_L_train,"m_L_train.csv")
