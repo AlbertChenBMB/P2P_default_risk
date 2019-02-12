@@ -77,3 +77,4 @@ cart_pred = ifelse(rf_pred >= 0.5, 1, 0)
 cart_r<-cbind(testset,cart_pred)
 cart_fullpay<-filter(cart_r,cart_r$cart_pred==1)
 summary(cart_fullpay$payback_rate)
+###################

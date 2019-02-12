@@ -6,14 +6,14 @@ library(caret)
 
 l_classifier <- glm(formula = payback_rate ~.,
                     family = binomial,
-                    data = mRMR)
+                    data = mRMR[-c(8,9)])
 summary(l_classifier)
 m_prob_pred = predict(l_classifier, type = 'response', 
-                    newdata = m_test[-c(11)])
+                    newdata = m_test[-c(8,9,11)])
 RMSE( m_prob_pred,m_test[11] )
 
 m_l_pred = ifelse(m_prob_pred >= 0.5, 1, 0)# set threshold to classification
-m_t_r<-cbind(m_testset,m_l_pred)#cbind classify label with testset
+m_t_r<-cbind(m_test,m_l_pred)#cbind classify label with testset
 
 m_l_fullpay<-filter(m_t_r,m_t_r$m_l_pred==1)
 summary(m_l_fullpay)
@@ -53,7 +53,7 @@ summary(m_l_fullpay)
 #reference https://rpubs.com/skydome20/R-Note14-SVM-SVR
 library(e1071)
 s_l <- svm(formula = payback_rate ~.,
-                    data = m_L_train,
+                    data =mRMR,
                     type = 'eps-regression',
                     kernel = 'radial')
 # Predicting the Test set results
@@ -75,7 +75,7 @@ names(L_train)[11]<-"verification_status_Not_Verified"
 names(testset)[11]<-"verification_status_Not_Verified"
 #training_set$label<-as.factor(m_L_train$payback_rate)
 rf_l<-randomForest(payback_rate~.,
-                       data = na.omit(m_L_train),
+                       data =mRMR,
                        ntree=200,
                        importance=T,
                        do.trace= 10)
