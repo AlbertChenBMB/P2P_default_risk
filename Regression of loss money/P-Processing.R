@@ -92,22 +92,22 @@ tra.dataset$revol_util<-as.numeric(sub("%","",tra.dataset$revol_util))/100
 tra.dataset$emp_length<-as.numeric(sub("%","",tra.dataset$emp_length))/10
 #creat new variable call return_rate and loss_rate 
 
-tra.dataset<-mutate(tra.dataset,return_rate =(1+tra.dataset$int_rate)^(5*tra.dataset$term))
+tra.dataset<-mutate(tra.dataset,expect_return_rate =(1+tra.dataset$int_rate)^(5*tra.dataset$term))
 #treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
 tra.dataset<-mutate(tra.dataset,
-                    gain = (tra.dataset$total_pymnt_inv-tra.dataset$funded_amnt_inv)/(tra.dataset$funded_amnt_inv*1.0209^tra.dataset$term))
-
+                    ROI = (1+(tra.dataset$total_pymnt_inv-tra.dataset$funded_amnt_inv)/(tra.dataset$funded_amnt_inv))^(1/(5*tra.dataset$term)))
+summary(tra.dataset$ROI)
 #payback rate we use return rate to calculate
 tra.dataset<-mutate(tra.dataset,
-                    payback_rate = (tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*return_rate))
+                    NRR = (tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*expect_return_rate))
 
 #replace the gain_rate is big then 1
-bg<-tra.dataset$payback_rate >=1
-tra.dataset[bg,"payback_rate"]<- 1
+bg<-tra.dataset$NRR >=1
+tra.dataset[bg,"NRR"]<- 1
 #change the label
 loanStatus<-c("Fully Paid"=1,"Default"=0,"Charged Off"=0)
 tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
-#add label 3
+summary(tra.dataset$loan_status)
 
 #tra.dataset$loss_rate<-scale(tra.dataset$loss_rate)
 #check the dataset
@@ -148,7 +148,7 @@ mean(tra.dataset$payback_rate)
 mean(tra.dataset$gain)
 quantile(tra.dataset$payback_rate)
 quantile(tra.dataset$gain)
-hist(tra.dataset$gain,main = "2016 profit distribution",xlab = "Gain")
+hist(tra.dataset$gain,main = "2016 profit distribution",xlab = "ROI")
 hist(tra.dataset$payback_rate,main = "2016 payback distribution",xlab = "Pay back rate")
 #################
 #for different dataset
