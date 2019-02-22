@@ -144,12 +144,12 @@ tra.dataset<-na.omit(tra.dataset)
 ##check
 summary(tra.dataset)
 #information
-mean(tra.dataset$payback_rate)
-mean(tra.dataset$gain)
+mean(tra.dataset$NRR)
+mean(tra.dataset$ROI)
 quantile(tra.dataset$payback_rate)
 quantile(tra.dataset$gain)
-hist(tra.dataset$gain,main = "2016 profit distribution",xlab = "ROI")
-hist(tra.dataset$payback_rate,main = "2016 payback distribution",xlab = "Pay back rate")
+hist(tra.dataset$ROI,main = "2016 profit distribution",xlab = "ROI")
+hist(tra.dataset$NRR,main = "2016 payback distribution",xlab = "Pay back rate")
 #################
 #for different dataset
 
@@ -158,8 +158,8 @@ str(tra.dataset)
 dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
                               11,12,13,14,15,16,
                               17,18,19,20,21,22,
-                              23,24,25,26,27,28,29,30,31,32,
-                              37,38,40,35,41))
+                              23,24,25,26,27,28,29,30,31,32,33,36,
+                              37,38,40,41,35))
 
 #training dataset
 #for classification 
@@ -170,13 +170,15 @@ dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
 #1. all features <- L_train & testset
 #2. mRMR         <- m_L_train & m_testset
 #################
-dataset<-na.omit(dataset)
+
 library(caTools)
 set.seed(456605)
 split = sample.split(dataset, SplitRatio = 0.7)
 training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
-L_train<-training_set[-c(34,35)]
+
+mean(training_set$ROI)
+L_train<-training_set[-c(36,38)]
 
 
 ################################################################
