@@ -4,13 +4,13 @@ library(keras)
 library(tensorflow)
 library(tibble)
 library(ggplot2)
-L_train<-na.omit(L_train)
-train_data<-as.matrix(L_train[1:32])
-train_labels<-as.matrix(L_train[33])
+
+train_data<-as.matrix(L_train[1:35])
+train_labels<-as.matrix(L_train[36])
 train_df <- as_tibble(train_data)
 testset<-na.omit(testset)
-test_data<-as.matrix(testset[1:32])
-test_labels<-as.matrix(testset[35])
+test_data<-as.matrix(testset[1:35])
+test_labels<-as.matrix(testset[37])
 
 
 
@@ -19,9 +19,9 @@ build_model <- function() {
         
         model <- keras_model_sequential() %>%
                 
-                layer_dense(units = 16, activation = "relu",
+                layer_dense(units = 18, activation = "relu",
                             input_shape = dim(train_data)[2]) %>%
-                layer_dense(units = 16, activation = "sigmoid",
+                layer_dense(units = 18, activation = "sigmoid",
                             input_shape = dim(train_data)[2]) %>%
                 layer_dense(units = 1)
         
@@ -37,6 +37,7 @@ build_model <- function() {
 model <- build_model()
 model %>% summary()
 # Display training progress by printing a single dot for each completed epoch.
+
 print_dot_callback <- callback_lambda(
         on_epoch_end = function(epoch, logs) {
                 if (epoch %% 80 == 0) cat("\n")
@@ -47,7 +48,7 @@ print_dot_callback <- callback_lambda(
 epochs <- 50
 
 # Fit the model and store training stats
-history <- model %>% fit(
+system.time(history <- model %>% fit(
         train_data,
         train_labels,
         epochs = epochs,
@@ -55,7 +56,8 @@ history <- model %>% fit(
         validation_split = 0.8,
         verbose = 0,
         callbacks = list(print_dot_callback)
-)
+))
+
 
 
 
@@ -84,11 +86,13 @@ plot(history, metrics = "mean_squared_error", smooth = FALSE) +
 # paste0("Mean absolute error on test set: $", sprintf("%.2f", mae ))
 ####################
 test_predictions <- model %>% predict(test_data)
-RMSE( test_predictions,testset[35] )
+RMSE( test_predictions,testset[37] )
 nn_pred = ifelse(test_predictions >= 0.5, 1, 0)
 n_r<-cbind(testset,nn_pred)
 n_fullpay<-filter(n_r,n_r$nn_pred==1)
-summary(n_fullpay$payback_rate)
+summary(n_fullpay$NRR)
+nrow(n_fullpay)/nrow(testset)
+summary(n_fullpay$ROI)
 ###############
 #for mRMR
 train_data<-as.matrix(m_L_train[1:10])

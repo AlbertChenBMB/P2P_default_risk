@@ -179,7 +179,7 @@ testset = subset(dataset, split == FALSE)
 
 mean(training_set$ROI)
 L_train<-training_set[-c(36,38)]
-
+C_train<-training_set[-c(36,37)]
 
 ################################################################
 #for new feature selection
