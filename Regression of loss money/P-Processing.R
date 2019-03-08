@@ -95,7 +95,7 @@ tra.dataset$emp_length<-as.numeric(sub("%","",tra.dataset$emp_length))/10
 tra.dataset<-mutate(tra.dataset,expect_return_rate =(1+tra.dataset$int_rate)^(5*tra.dataset$term))
 #treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
 tra.dataset<-mutate(tra.dataset,
-                    ROI = (1+(tra.dataset$total_pymnt_inv-tra.dataset$funded_amnt_inv)/(tra.dataset$funded_amnt_inv))^(1/(5*tra.dataset$term)))
+                    ROI = (1+((tra.dataset$total_pymnt_inv-tra.dataset$funded_amnt_inv)/(tra.dataset$funded_amnt_inv)))^(1/(5*tra.dataset$term)))
 summary(tra.dataset$ROI)
 #payback rate we use return rate to calculate
 tra.dataset<-mutate(tra.dataset,
@@ -109,12 +109,10 @@ loanStatus<-c("Fully Paid"=1,"Default"=0,"Charged Off"=0)
 tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
 summary(tra.dataset$loan_status)
 
-#tra.dataset$loss_rate<-scale(tra.dataset$loss_rate)
 #check the dataset
-summary(tra.dataset)
-RF_data<-tra.dataset
-### export this dataset for randomforest
-
+#add new label profit
+tra.dataset<-mutate(tra.dataset,
+                    profit = tra.dataset$funded_amnt_inv-tra.dataset$total_pymnt_inv)
 ###########################################################################################
 #normalize
 tra.dataset$pub_rec<-BBmisc::normalize(tra.dataset$pub_rec,method="range",range=c(0:1))
