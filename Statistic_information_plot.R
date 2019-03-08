@@ -5,82 +5,119 @@ CrossTable(dataset3$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,pr
 CrossTable(dataset4$purpose,dataset1$loan_status,prop.r = TRUE,prop.c = FALSE,prop.t = FALSE,prop.chisq = FALSE)
 #data plot
 #merge data without dataset4
-dataset2016<-Reduce(function(x, y) merge(x, y, all=TRUE), list(dataset1, dataset2, dataset3,dataset4))
 #
-library(dplyr)
-PD<-select(dataset2016,c(1, 3,4 ,5, 6,7, 10, 11, 12, 13,14 ,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
+plot.dataset<-select(dataset2016,c(3,4 ,5, 6,7, 10, 11, 12, 13,14,19 ,23 ,24, 25, 26 ,29,30 ,31 ,32, 33,38,15))
 #filter loan status to remine Full pay, default, charge off
-PD<-filter(PD,loan_status =="Fully Paid"|loan_status =="Charged Off"|loan_status =="Default")
-str(PD)
-tbl_df(PD)
-PD<-na.omit(PD)
-########
-##time problem rember change in csv about credit age1``
-PD$issue_d<-dmy(paste("01-", PD$issue_d , sep =""))
-PD$earliest_cr_line<-dmy(paste("01-", PD$earliest_cr_line , sep =""))
+plot.dataset<-filter(plot.dataset,loan_status =="Fully Paid"|loan_status =="Charged Off"|loan_status =="Default")
+
+########################################################################################################
+#Data pre-processing
+
+##time problem rember change in csv about term
+plot.dataset$term = factor(plot.dataset$term,
+                          levels = c(" 36 months"," 60 months"),
+                          labels = c(0.6, 1))
+plot.dataset$term<-as.numeric(levels(plot.dataset$term))[plot.dataset$term]
+
+##time problem rember change in csv about credit age
+plot.dataset$issue_d<-dmy(paste("01-", plot.dataset$issue_d , sep =""))
+plot.dataset$earliest_cr_line<-dmy(paste("01-", plot.dataset$earliest_cr_line , sep =""))
 #creat new variable call credit age
-PD<-mutate(PD,   credit_age = difftime(PD$issue_d,PD$earliest_cr_line,units="weeks"))
-#time problem rember change in csv about term
-PD<-mutate(PD,period = PD$term)
-PD$term = factor(PD$term,
-                      levels = c(" 36 months"," 60 months"),
-                      labels = c(0.6, 1))
-#
-PD$term<-as.numeric(levels(PD$term))[PD$term]
-#creat new variable call return_rate and new label
+plot.dataset<-mutate(plot.dataset,
+                    credit_age = difftime(plot.dataset$issue_d,plot.dataset$earliest_cr_line,units="weeks"))
+######################################################################################################
+#Add new variable
+#creat new variable call income to payment ratio ITP
+plot.dataset<-mutate(plot.dataset,mic = plot.dataset$annual_inc/12,ITP = (plot.dataset$installment/mic))
+z<-plot.dataset$ITP>=1
+plot.dataset[z,"ITP"]<- 1
+rm(z)
+#creat new variable call revol to payment ratio RTI
+plot.dataset<-mutate(plot.dataset,RTI =plot.dataset$revol_bal/mic)
+B<-plot.dataset$RTI>=4
+plot.dataset[B,"RTI"]<- 4
+rm(B)
+#delet old variable
+plot.dataset$mic<-NULL
+plot.dataset$revol_bal<-NULL
+##################################
+#remove some variables
+plot.dataset$issue_d<-NULL
+plot.dataset$earliest_cr_line<-NULL
 #change to %numerice
-PD$int_rate<-as.numeric(sub("%","",PD$int_rate))/100
-PD<-mutate(PD,ER =(1+PD$int_rate)^(5*PD$term))
-PD<-mutate(PD,
-              NRR = (PD$total_pymnt_inv/(PD$funded_amnt_inv*PD$ER)))
-#replace the loss_rate is small then -1
-bg<-PD$NRR >=1
-PD[bg,"NRR"]<- 1
+plot.dataset$int_rate<-as.numeric(sub("%","",plot.dataset$int_rate))/100
+plot.dataset$revol_util<-as.numeric(sub("%","",plot.dataset$revol_util))/100
+
+#creat new variable call return_rate and loss_rate 
+
+plot.dataset<-mutate(plot.dataset,expect_return_rate =(1+plot.dataset$int_rate)^(5*plot.dataset$term))
+#treasure rate in 2016/01 is about 2.09%, we use it as our risk-free interest rate
+plot.dataset<-mutate(plot.dataset,
+                    ROI = (1+((plot.dataset$total_pymnt_inv-plot.dataset$funded_amnt_inv)/(plot.dataset$funded_amnt_inv)))^(1/(5*plot.dataset$term)))
+summary(plot.dataset$ROI)
 #
-PD<-mutate(PD,mic = PD$annual_inc/12,ITP = (PD$installment/mic))
-z<-PD$ITP>=1
-PD[z,"ITP"]<- 1
-#round DTI
-z<- PD$dti >= 100
-PD[z,"DTI"]<-100
+plot.dataset<-mutate(plot.dataset,
+                    NRR = (plot.dataset$total_pymnt_inv)/(plot.dataset$funded_amnt_inv*expect_return_rate))
+
+#replace the gain_rate is big then 1
+bg<-plot.dataset$NRR >=1
+plot.dataset[bg,"NRR"]<- 1
+#change the label
+loanStatus<-c("Fully Paid"=1,"Default"=0,"Charged Off"=0)
+plot.dataset$loan_status <- loanStatus[plot.dataset$loan_status]
+summary(plot.dataset$loan_status)
+
+#check the dataset
+#add new label profit
+plot.dataset<-mutate(plot.dataset,
+                    profit = plot.dataset$funded_amnt_inv-plot.dataset$total_pymnt_inv)
 ##########################################################
-PD = PD %>%
-  mutate(loan_outcome = ifelse(loan_status %in% c('Charged Off' , 'Default') , 
-                               1, 
-                               ifelse(loan_status == 'Fully Paid' , 0 , 'No info')
-  ))
+
 ##########################################################
-
-
-
+library(lattice)
 library(ggplot2)
 #credit age VS loss_rate
-plot(x =PD$credit_age,y = PD$NRR )
-#loan_status VS loss_rate
-ggplot( PD,aes(x=loan_status,y=NRR,fill=loan_status))+geom_point(aes(color=grade,alpha=0.3))
-###grade VS loss_rate
-#calculate mean of loss_rate
+plot(x =plot.dataset$credit_age,y = plot.dataset$NRR )
+
+##distrubtion density
+qplot(x=NRR,                             
+      data=plot.dataset,                     
+      geom="density",        # 圖形=density
+      xlab="NRR",                         
+      color= plot.dataset$home_ownership           # 以顏色標home_owner，複合式的機率密度圖
+)
+#
+
+qplot(x=NRR,                             
+      data=plot.dataset,                     
+      geom="density",        # 圖形=density
+      xlab="NRR",                         
+      color= plot.dataset$purpose           # 以顏色標home_owner，複合式的機率密度圖
+)
 
 
 #calculate mean of loss for each grade
-PD %>% group_by(grade) %>%summarise(mean(NRR,na.rm = TRUE))
-PD %>% group_by(grade) %>%summarise(sd(NRR,na.rm = TRUE))
+plot.dataset%>% group_by(grade) %>%summarise(mean(NRR,na.rm = TRUE))
+plot.dataset %>% group_by(grade) %>%summarise(sd(NRR,na.rm = TRUE))
 
 #plot boxplot
-
-#with home ownership
-ggplot( PD,aes(x=loan_status,y=dti,fill=home_ownership))+geom_boxplot()+coord_cartesian(ylim = c(0:100))
-ggplot( PD,aes(x=loan_status,y=ITP,fill=home_ownership))+geom_boxplot()
+#box plot with home ownership
+ggplot( plot.dataset,aes(x=loan_status,y=dti,fill=home_ownership))+geom_boxplot()+coord_cartesian(ylim = c(0:100))
+ggplot(plot.dataset,aes(x=loan_status,y=ITP,fill=home_ownership))+geom_boxplot()
 #grade vs NRR
-ggplot( PD,aes(x=grade,y=NRR,fill=grade))+geom_boxplot()
-#term VS loss_rate
-PD$term<-as.factor(PD$term)
-ggplot( PD,aes(x=term,y=loss_rate,fill=term))+geom_boxplot()
+ggplot( plot.dataset,aes(x=grade,y=NRR,fill=grade))+geom_boxplot()
+#term VS NRR
+plot.dataset$term<-as.factor(plot.dataset$term)
+ggplot( plot.dataset,aes(x=term,y=NRR,fill=term))+geom_boxplot()
+
+#loan status VS NRR
+plot.dataset$loan_status<-as.factor(plot.dataset$loan_status)
+ggplot( plot.dataset,aes(x=loan_status,y=NRR,fill=term))+geom_boxplot()
 
 ####################################################################################################################################
 png(filename = "Hrelationship.png",width = 480,height = 480)
 #loan_status VS home_ownership                                                                                                   ###
-ggplot(PD , aes(x = home_ownership , y = ..count.. , fill = factor(loan_outcome , c(1 , 0) , c('Default' , 'Fully Paid')))) +    ###
+ggplot(plot.dataset , aes(x = home_ownership , y = ..count.. , fill = factor(loan_status , c(1 , 0) , c('Default' , 'Fully Paid')))) +    ###
   geom_bar() +                                                                                                                   ###
   theme(legend.title = element_blank())                                                                                          ###
 # for mortga, default=19871, fullpay=72880, 21.4%                                                                                ###
@@ -90,24 +127,31 @@ ggplot(PD , aes(x = home_ownership , y = ..count.. , fill = factor(loan_outcome 
 # for any, default=8, fullpay=24, 26%
 dev.off()
 ####################################################################################################################################
-png(filename = "Hrelationship.png",width = 590,height = 430)
+png(filename = "Purposerelationship.png",width = 590,height = 430)
 #loan_status VS purpose
-ggplot(PD , aes(x = purpose , y = ..count.. , fill = factor(loan_outcome , c(1 , 0) , c('Default' , 'Fully Paid')))) + 
+ggplot(plot.dataset , aes(x = purpose , y = ..count.. , fill = factor(loan_outcome , c(1 , 0) , c('Default' , 'Fully Paid')))) + 
         geom_bar() + 
         theme(legend.title = element_blank())
 dev.off()
+############################
+qplot(x=dti,
+      
+      data=plot.dataset,                     
+      geom="density",        # 圖形=density
+      xlab="NRR",                         
+      color= plot.dataset$home_ownership           # 以顏色標home_owner，複合式的機率密度圖
+)
 
-
-#DTI VS grade, loss_rate
+#DTI VS grade, NRR
 par(mfrow=c(2,1))
-ggplot(PD,aes(x=dti,y=loss_rate))+geom_point(aes(color=term),alpha=0.3)+coord_cartesian(xlim = c(0,80))
-ggplot(PD,aes(x=dti,y=loss_rate))+geom_point(aes(color=term),alpha=0.3)+coord_cartesian(xlim = c(80,500))
+ggplot(plot.dataset,aes(x=dti,y=NRR))+geom_point(aes(color=term),alpha=0.3)+coord_cartesian(xlim = c(0,80))
+ggplot(plot.dataset,aes(x=dti,y=NRR))+geom_point(aes(color=term),alpha=0.3)+coord_cartesian(xlim = c(80,500))
 #revol
-ggplot(PD,aes(x=return_rate,y=loss_rate))+geom_point(aes(color=grade,alpha=0.3))
+ggplot(plot.dataset,aes(x=return_rate,y=loss_rate))+geom_point(aes(color=grade,alpha=0.3))
 ##################################################################################################################################
 #
 #plot
-#subsample of PD
+#subsample of plot data
 set.seed(7777)
 split = sample.split(PD, SplitRatio = 0.001)
 newPD = subset(PD, split == TRUE)
@@ -143,8 +187,8 @@ ggplot( PD,aes(x=loan_outcome,y=ITP,fill=loan_outcome))+geom_boxplot()
 ############
 #new try
 png(filename = "ITP&TR.png",width = 680,height = 480)
-p<-ggplot(newPD,aes(int_rate,ITP, shape=factor(loan_outcome)))
-p+geom_point(aes(colour=factor(loan_outcome)),size=4)+geom_point(colour="grey90",size=1.5,alpha=0.8)+
+p<-ggplot(plot.dataset,aes(int_rate,ITP, shape=factor(loan_status)))
+p+geom_point(aes(colour=factor(loan_status)),size=4)+geom_point(colour="grey90",size=1.5,alpha=0.8)+
         xlab("Interest Rate")+ylab("ITP")+coord_cartesian(ylim = c(0:1))+theme_classic()
 
 dev.off()
