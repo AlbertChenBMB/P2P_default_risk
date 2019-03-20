@@ -144,10 +144,10 @@ summary(tra.dataset)
 #information
 mean(tra.dataset$NRR)
 mean(tra.dataset$ROI)
-quantile(tra.dataset$payback_rate)
-quantile(tra.dataset$gain)
+quantile(tra.dataset$NRR)
+quantile(tra.dataset$profit)
 hist(tra.dataset$ROI,main = "2016 profit distribution",xlab = "ROI")
-hist(tra.dataset$NRR,main = "2016 payback distribution",xlab = "Pay back rate")
+hist(tra.dataset$NRR,main = "2016 payback distribution",xlab = "NRR")
 #################
 #for different dataset
 
@@ -157,8 +157,11 @@ dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
                               11,12,13,14,15,16,
                               17,18,19,20,21,22,
                               23,24,25,26,27,28,29,30,31,32,33,36,
-                              37,38,40,41,35))
-
+                              37,38,40,41,42,35))
+rm(dataset1)
+rm(dataset2)
+rm(dataset3)
+rm(dataset4)
 #training dataset
 #for classification 
 #1. all features <- C_train & testset
@@ -176,17 +179,15 @@ training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 
 mean(training_set$ROI)
-L_train<-training_set[-c(36,38)]
+L_train<-training_set[-c(36,38,39)]
 C_train<-training_set[-c(36,37)]
 
 ################################################################
 #for new feature selection
 #for featureselection 
-mRMR<-training_set[c(31,26,32,29,15,30,27,17,19,2,36)]
-LASSO<-training_set[c(2,  3,  5,  7 , 9 ,10 ,11 ,13, 14, 16, 17 ,18, 19, 20 ,21 ,22, 23 ,24, 25, 26, 27 ,28, 29, 30 ,31, 32, 33,36)]
-#dataset with mRMR
-m_test<-testset[c(31,26,32,29,15,30,27,17,19,2,36)]
-l_test<-testset[c(2, 3, 5,7,9,10,11,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,36)]
+mRMR<-training_set[c(31,26,32,29,15,30,27,17,19,2,37)]
+m_test<-testset[c(31,26,32,29,15,30,27,17,19,2,37,38,39)]
+
 
 
 #export dataset

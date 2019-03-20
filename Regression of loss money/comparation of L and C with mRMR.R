@@ -4,12 +4,12 @@
 
 library(caret)
 
-l_classifier <- glm(formula = payback_rate ~.,
+ml <- glm(formula = NRR ~.,
                     family = binomial,
-                    data = mRMR[-c(8,9)])
+                    data = mRMR)
 summary(l_classifier)
-m_prob_pred = predict(l_classifier, type = 'response', 
-                    newdata = m_test[-c(8,9,11)])
+m_prob_pred = predict(ml, type = 'response', 
+                    newdata = m_test[-c(11,12,13)])
 RMSE( m_prob_pred,m_test[11] )
 
 m_l_pred = ifelse(m_prob_pred >= 0.5, 1, 0)# set threshold to classification
@@ -17,7 +17,7 @@ m_t_r<-cbind(m_test,m_l_pred)#cbind classify label with testset
 
 m_l_fullpay<-filter(m_t_r,m_t_r$m_l_pred==1)
 summary(m_l_fullpay)
-
+nrow(m_l_fullpay)/nrow(testset)
 # # classification
 # 
 # m_C_classifier <- glm(formula = loan_status ~.,

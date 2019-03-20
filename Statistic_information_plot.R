@@ -85,7 +85,7 @@ qplot(x=NRR,
       geom="density",        # 圖形=density
       xlab="NRR",                         
       color= plot.dataset$home_ownership           # 以顏色標home_owner，複合式的機率密度圖
-)
+)+theme_classic()
 #
 
 qplot(x=NRR,                             
@@ -93,7 +93,7 @@ qplot(x=NRR,
       geom="density",        # 圖形=density
       xlab="NRR",                         
       color= plot.dataset$purpose           # 以顏色標home_owner，複合式的機率密度圖
-)
+)+theme_classic()
 
 
 #calculate mean of loss for each grade
@@ -112,8 +112,9 @@ ggplot( plot.dataset,aes(x=term,y=NRR,fill=term))+geom_boxplot()
 
 #loan status VS NRR
 plot.dataset$loan_status<-as.factor(plot.dataset$loan_status)
-ggplot( plot.dataset,aes(x=loan_status,y=NRR,fill=term))+geom_boxplot()
-
+png(filename = "loan_status vs NRR.png",width = 480,height = 480)
+ggplot( plot.dataset,aes(x=loan_status,y=NRR))+geom_boxplot()
+dev.off()
 ####################################################################################################################################
 png(filename = "Hrelationship.png",width = 480,height = 480)
 #loan_status VS home_ownership                                                                                                   ###
@@ -153,8 +154,8 @@ ggplot(plot.dataset,aes(x=return_rate,y=loss_rate))+geom_point(aes(color=grade,a
 #plot
 #subsample of plot data
 set.seed(7777)
-split = sample.split(PD, SplitRatio = 0.001)
-newPD = subset(PD, split == TRUE)
+split = sample.split(plot.dataset, SplitRatio = 0.001)
+newPD = subset(plot.dataset, split == TRUE)
 
 #plot Relationship wiht  IR DTI ITP and loan_status
 png(filename = "DTI&TR.png",width = 680,height = 480)
@@ -163,12 +164,16 @@ ggplot( newPD,aes(x=int_rate ,y=dti,fill=loan_outcome))+
         xlab("Interest Rate")+ylab("DTI")+coord_cartesian(ylim = c(0:100))+theme_classic()
 dev.off()
 png(filename = "ITP&IR.png",width = 680,height = 480)
-ggplot( newPD,aes(x=int_rate ,y=ITP,fill=loan_outcome))+
-        geom_point(aes(shape=loan_outcome,color=loan_outcome,alpha=0.4),size=4)+
+ggplot( newPD,aes(x=int_rate ,y=ITP,fill=term))+
+        geom_point(aes(shape=NRR,color=NRR,alpha=0.4),size=4)+
         xlab("Interest Rate")+ylab("ITP")+coord_cartesian(ylim = c(0:1))+theme_classic()
 dev.off()
 #plot Relationship wiht  IR NRR period and loan_status
 ggplot( newPD,aes(x=int_rate ,y=NRR,fill=period))+
+        geom_point(aes(shape=period,color=period,alpha=0.4),size=4)+
+        xlab("Interest Rate")+ylab("NRR")+coord_cartesian(ylim = c(0:1))+theme_classic()
+
+ggplot( newPD,aes(x=ITP ,y=NRR,fill=period))+
         geom_point(aes(shape=period,color=period,alpha=0.4),size=4)+
         xlab("Interest Rate")+ylab("NRR")+coord_cartesian(ylim = c(0:1))+theme_classic()
 
@@ -196,8 +201,10 @@ dev.off()
 
 ###
 plotdata<-testset
-plotdata$term<-as.factor(plotdata$term)
-ggplot( plotdata,aes(x=int_rate ,y=payback_rate,fill=term))+
-        geom_point(aes(shape=term,color=term,alpha=0.2),size=2)+
-        xlab("Interest Rate")+ylab("NRR")
+newPD$term<-as.factor(newPD$term)
+png(filename = "ITP&NRR.png",width = 680,height = 480)
+ggplot( newPD,aes(x=ITP ,y=NRR,fill=term))+
+        geom_point(aes(shape=term,color=term, alpha=0.4),size=4)+coord_cartesian(xlim = c(0,0.2))+
+        xlab("ITP")+ylab("NRR")+theme_classic()
+dev.off()
         

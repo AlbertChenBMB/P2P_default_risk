@@ -21,6 +21,7 @@ t_r<-cbind(testset,l_pred)
 l_fullpay<-filter(t_r,t_r$l_pred==1)
 summary(l_fullpay$NRR)
 mean(l_fullpay$NRR)
+sd(l_fullpay$NRR)
 mean(l_fullpay$ROI)
 nrow(l_fullpay)/nrow(testset)
 
