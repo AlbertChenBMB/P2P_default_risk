@@ -1,3 +1,4 @@
+setwd("C:/Users/SF/Desktop/P2P_final")
 library(dplyr)
 library(data.table)
 library(dummies)
@@ -13,15 +14,15 @@ library(lubridate)
 #         first: classification
 #         second: LR grade
 ########################################################
-dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
-#dataset1<-dataset1[1:133888,3:145]
+#dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
+dataset1<-Q12016[1:133887,3:145]
 ####datase2  have problems
-dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE)
-#dataset2<-dataset2[1:97855,3:145]
-dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE)
-#dataset3<-dataset3[1:99121,3:145]
-dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
-#dataset4<-dataset4[1:103547,3:145]
+#dataset2<-read.csv("LoanStats_2016Q2.csv",stringsAsFactors = FALSE)
+dataset2<-Q22016[1:97854,3:145]
+#dataset3<-read.csv("LoanStats_2016Q3.csv",stringsAsFactors = FALSE)
+dataset3<-Q32016[1:99120,3:145]
+#dataset4<-read.csv("LoanStats_2016Q4.csv",stringsAsFactors = FALSE)
+dataset4<-Q42016[1:103546,3:145]
 #test dataset
 #ver.set<-dataset4
 #used only dataset4 to be test set
@@ -58,12 +59,12 @@ tra.dataset<-mutate(tra.dataset,
 tra.dataset<-mutate(tra.dataset,mic = tra.dataset$annual_inc/12,ITP = (tra.dataset$installment/mic))
 z<-tra.dataset$ITP>=1
 tra.dataset[z,"ITP"]<- 1
- 
+rm(z) 
 #creat new variable call revol to payment ratio RTI
 tra.dataset<-mutate(tra.dataset,RTI =tra.dataset$revol_bal/mic)
 B<-tra.dataset$RTI>=4
 tra.dataset[B,"RTI"]<- 4
-
+rm(B)
 #delet old variable
 tra.dataset$mic<-NULL
 tra.dataset$revol_bal<-NULL
@@ -97,13 +98,14 @@ tra.dataset<-mutate(tra.dataset,expect_return_rate =(1+tra.dataset$int_rate)^(5*
 tra.dataset<-mutate(tra.dataset,
                     ROI = (1+((tra.dataset$total_pymnt_inv-tra.dataset$funded_amnt_inv)/(tra.dataset$funded_amnt_inv)))^(1/(5*tra.dataset$term)))
 summary(tra.dataset$ROI)
-#payback rate we use return rate to calculate
+#Net return rate we use return rate to calculate
 tra.dataset<-mutate(tra.dataset,
                     NRR = (tra.dataset$total_pymnt_inv)/(tra.dataset$funded_amnt_inv*expect_return_rate))
 
 #replace the gain_rate is big then 1
 bg<-tra.dataset$NRR >=1
 tra.dataset[bg,"NRR"]<- 1
+rm(bg)
 #change the label
 loanStatus<-c("Fully Paid"=1,"Default"=0,"Charged Off"=0)
 tra.dataset$loan_status <- loanStatus[tra.dataset$loan_status]
