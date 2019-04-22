@@ -1,5 +1,5 @@
 #setwd to github direction
-setwd("C:/Users/glab/Documents/GitHub/P2P_default_risk")
+setwd("C:/Users/SF/Desktop/P2P_final")
 #check dataset
 if (!file.exists("dataset")){
         dir.create("dataset")
@@ -38,15 +38,15 @@ unzip("2017Q3.csv")
 unzip("2017Q4.csv")
 unzip("2018Q1.csv")
 #read data and skip first 2 row becaue they are describe line and because header is true so skip =1)
-Q12016<-read.csv(("LoanStats_2016Q1.csv"),header = TRUE,sep = ",",skip = 1)
-Q22016<-read.csv(("LoanStats_2016Q2.csv"),header = TRUE,sep = ",",skip = 1)
-Q32016<-read.csv(("LoanStats_2016Q3.csv"),header = TRUE,sep = ",",skip = 1)
-Q42016<-read.csv(("LoanStats_2016Q4.csv"),header = TRUE,sep = ",",skip = 1)
-Q12017<-read.csv(("LoanStats_2017Q1.csv"),header = TRUE,sep = ",",skip = 1)
-Q22017<-read.csv(("LoanStats_2017Q2.csv"),header = TRUE,sep = ",",skip = 1)
-Q32017<-read.csv(("LoanStats_2017Q3.csv"),header = TRUE,sep = ",",skip = 1)
-Q42017<-read.csv(("LoanStats_2017Q4.csv"),header = TRUE,sep = ",",skip = 1)
-Q12018<-read.csv(("LoanStats_2016Q1.csv"),header = TRUE,sep = ",",skip = 1)
+Q12016<-read.csv(("LoanStats_2016Q1.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q22016<-read.csv(("LoanStats_2016Q2.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q32016<-read.csv(("LoanStats_2016Q3.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q42016<-read.csv(("LoanStats_2016Q4.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q12017<-read.csv(("LoanStats_2017Q1.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q22017<-read.csv(("LoanStats_2017Q2.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q32017<-read.csv(("LoanStats_2017Q3.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q42017<-read.csv(("LoanStats_2017Q4.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q12018<-read.csv(("LoanStats_2016Q1.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
 
 #check data size
 object.size()
