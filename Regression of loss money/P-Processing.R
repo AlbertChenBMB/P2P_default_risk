@@ -1,4 +1,4 @@
-setwd("C:/Users/SF/Desktop/P2P_final")
+setwd("C:/Users/SF/Desktop/P2P_final/dataset")
 library(dplyr)
 library(data.table)
 library(dummies)
@@ -14,6 +14,17 @@ library(lubridate)
 #         first: classification
 #         second: LR grade
 ########################################################
+#read data and skip first 2 row becaue they are describe line and because header is true so skip =1)
+Q12016<-read.csv(("LoanStats_2016Q1.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q22016<-read.csv(("LoanStats_2016Q2.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q32016<-read.csv(("LoanStats_2016Q3.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q42016<-read.csv(("LoanStats_2016Q4.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q12017<-read.csv(("LoanStats_2017Q1.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q22017<-read.csv(("LoanStats_2017Q2.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q32017<-read.csv(("LoanStats_2017Q3.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q42017<-read.csv(("LoanStats_2017Q4.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+Q12018<-read.csv(("LoanStats_2016Q1.csv"),header = TRUE,sep = ",",skip = 1,stringsAsFactors = FALSE)
+
 #dataset1<-read.csv("LoanStats_2016Q1.csv",stringsAsFactors = FALSE)
 dataset1<-Q12016[1:133887,3:145]
 ####datase2  have problems

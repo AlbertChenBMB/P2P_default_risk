@@ -1,7 +1,5 @@
 ## mRMR
 library(mRMRe)
-
-
 sapply(dataset, class)
 df<-dataset[-c(36,38,39)]
 names(df)
