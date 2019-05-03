@@ -4,6 +4,8 @@ names(testset)[12]<-"verification_status_Source_Verified"
 names(L_train)[12]<-"verification_status_Source_Verified"
 names(L_train)[11]<-"verification_status_Not_Verified"
 names(testset)[11]<-"verification_status_Not_Verified"
+names(C_train)[12]<-"verification_status_Source_Verified"
+names(C_train)[11]<-"verification_status_Not_Verified"
 # regression
 
 library(MLmetrics)
@@ -14,8 +16,8 @@ system.time(l_classifier <-glm(formula = NRR ~.,
                 data = L_train))
 summary(l_classifier)
 prob_pred = predict(l_classifier, type = 'response', 
-                    newdata = testset[-c(36:38)])
-RMSE( testset[37],prob_pred )
+                    newdata = testset[-c(36:39)])
+RMSE( testset[,38],prob_pred )
 l_pred = ifelse(prob_pred >= 0.5, 1, 0)
 t_r<-cbind(testset,l_pred)
 l_fullpay<-filter(t_r,t_r$l_pred==1)

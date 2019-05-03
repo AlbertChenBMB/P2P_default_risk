@@ -192,13 +192,13 @@ training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 
 mean(training_set$ROI)
-L_train<-training_set[-c(36,38,39)]
-C_train<-training_set[-c(36,37)]
+L_train<-training_set[-c(33,36,37,39)]
+C_train<-training_set[-c(36,37,38,39)]
 
 ################################################################
 #for new feature selection
 #for featureselection 
-mRMR<-training_set[c(31,26,32,29,15,30,27,17,19,2,37)]
+mRMR<-training_set[mRMRresut]
 m_test<-testset[c(31,26,32,29,15,30,27,17,19,2,37,38,39)]
 
 

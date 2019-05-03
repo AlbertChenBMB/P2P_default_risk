@@ -1,49 +1,27 @@
-library(caTools)
-set.seed(456605)
-split = sample.split(mRMR$label, SplitRatio = 0.8)
-training_set = subset(mRMR, split == TRUE)
-testset = subset(mRMR, split == FALSE)
+#C train, target 33
 
 #logistic
-l_classifier <- glm(formula = label ~.,
+C_classifier <- glm(formula = loan_status ~.,
                     family = binomial,
-                    data = training_set)
-prob_pred = predict(l_classifier, type = 'response', 
-                    newdata = testset[-11])
-l_pred = ifelse(prob_pred >= 0.5, 1, 0)
-lcm = table(testset[, 11], l_pred)
-lcm
-l_accuracy<- sum(diag(lcm))/sum(lcm)
-l_accuracy
-N_A<-lcm[2,2]/(lcm[1,2]+lcm[2,2])
-P_A<-lcm[1,1]/(lcm[1,1]+lcm[2,1])
+                    data = C_train)
+C_pred = predict(C_classifier, type = 'response', 
+                    newdata = testset[-c(33,36,37,38,39)])
+Cpred = ifelse(C_pred >= 0.5, 1, 0)
+ccm = table(testset[, 33], Cpred)
+ccm
+accuracy<- sum(diag(ccm))/sum(ccm)
+accuracy
+N_A<-ccm[2,2]/(ccm[1,2]+ccm[2,2])
+P_A<-ccm[1,1]/(ccm[1,1]+ccm[2,1])
 GA<-sqrt(N_A*P_A)
 GA
-#logistic_LASSO
-l_classifier <- glm(formula = label ~.,
-                    family = binomial,
-                    data = training_set)
-prob_pred = predict(l_classifier, type = 'response', 
-                    newdata = testset[-11])
-l_pred = ifelse(prob_pred >= 0.5, 1, 0)
-lcm = table(testset[, 11], l_pred)
-lcm
-l_accuracy<- sum(diag(lcm))/sum(lcm)
-l_accuracy
-N_A<-lcm[2,2]/(lcm[1,2]+lcm[2,2])
-P_A<-lcm[1,1]/(lcm[1,1]+lcm[2,1])
-GA<-sqrt(N_A*P_A)
-GA
-
-
-
 
 #SVM
 library(e1071)
-s_classifier <- svm(formula = label ~.,
-                    data = training_set,
+s_classifier <- svm(formula = loan_status ~.,
+                    data = C_train,
                     type = 'C-classification',
-                    kernel = 'linear')
+                    kernel = 'radial')
 # Predicting the Test set results
 s_pred = predict(s_classifier, newdata = testset[-11])
 
@@ -61,15 +39,15 @@ sGA
 #randomForest
 library(randomForest)
 set.seed(156)
-training_set$label<-as.factor(training_set$label)
-rf_class<-randomForest(label~.,
-                       data = training_set,
-                       ntree=500,
+C_train$loan_status<-as.factor(C_train$loan_status)
+rf_class<-randomForest(loan_status~.,
+                       data = C_train,
+                       ntree=300,
                        importance=T,
-                       do.trace= 50,type="classification")
+                       do.trace= 10,type="classification")
 plot(rf_class)
 round(importance(rf_class),2)
-rf_pred = predict(rf_class, newdata = testset,type = "class")
+rf_pred = predict(rf_class, newdata  = testset[-c(33,36,37,38,39)],type = "class")
 #rf_pred = ifelse(rf_pred >= 0.5, 1, 0)
 #rf_pred<-as.factor(unlist(rf_pred))
 rfcm<-table(testset[,11],rf_pred)
@@ -80,7 +58,68 @@ rfN_A<-rfcm[2,2]/(rfcm[1,2]+rfcm[2,2])
 rfP_A<-rfcm[1,1]/(rfcm[1,1]+rfcm[2,1])
 rfGA<-sqrt(rfN_A*rfP_A)
 rfGA
+# Keras
+library(keras)
+library(tensorflow)
+library(tibble)
+library(ggplot2)
+train_data<-as.matrix(L_train[1:35])
+train_labels<-as.matrix(L_train[36])
+train_df <- as_tibble(train_data)
+testset<-na.omit(testset)
+test_data<-as.matrix(testset[1:35])
+test_labels<-as.matrix(testset[37])
+#build model
+build_model <- function() {
+  
+  model <- keras_model_sequential() %>%
+    
+    layer_dense(units = 18, activation = "sigmoid",
+                input_shape = dim(train_data)[2]) %>%
+    layer_dense(units = 1)
+  
+  model %>% compile(
+    loss = "binary_crossentropy",
+    optimizer = "adam",
+    metrics = c("accuracy")
+  )
+  
+  model
+}
 
+model <- build_model()
+model %>% summary()
+# Display training progress by printing a single dot for each completed epoch.
+print_dot_callback <- callback_lambda(
+  on_epoch_end = function(epoch, logs) {
+    if (epoch %% 80 == 0) cat("\n")
+    cat(".")
+  }
+)    
+epochs <- 50
+
+# Fit the model and store training stats
+system.time(history <- model %>% fit(
+  train_data,
+  train_labels,
+  epochs = epochs,
+  batch_size= 10,
+  validation_split = 0.8,
+  verbose = 0,
+  callbacks = list(print_dot_callback)
+))
+
+plot(history, metrics = "mean_squared_error", smooth = FALSE) +
+  coord_cartesian(ylim = c(0, 0.1))
+
+test_predictions <- model %>% predict(test_data)
+RMSE( test_predictions,testset[37] )
+nn_pred = ifelse(test_predictions >= 0.5, 1, 0)
+n_r<-cbind(testset,nn_pred)
+n_fullpay<-filter(n_r,n_r$nn_pred==1)
+summary(n_fullpay$NRR)
+nrow(n_fullpay)/nrow(testset)
+summary(n_fullpay$ROI)
 #compartion
 lcm
 scm
@@ -95,47 +134,3 @@ s_accuracy
 t_accuracy
 rf_accuracy
 
-
-
-
-#C5.0
-library(C50)
-# c50pred<-C5.0(x=training_set[,-17],
-#               y=as.factor(training_set$label1),
-#               trials = 100,
-#               data = training_set)
-# c_pred = predict(c50pred, newdata = test_set,type = "class")
-# ccm<-table(test_set$label1,c_pred)
-# ccm
-# c_prec<- ccm[2,2]/(ccm[1,2]+ccm[2,2])
-# c_recall<-ccm[2,2]/(ccm[2,1]+ccm[2,2])
-# cF1<- 2*(c_prec*c_recall)/(c_prec+c_recall)
-# cF1
-# c_accuracy<- sum(diag(ccm))/sum(ccm)
-# c_accuracy
-# new_pred = predict(c50pred, newdata = dataset2016, type = "class")
-# ncm<-table(dataset2016$label1, new_pred)
-# ncm
-# n_prec<- ncm[2,2]/(ncm[1,2]+ncm[2,2])
-# n_recall<-ncm[2,2]/(ncm[2,1]+ncm[2,2])
-# nF1<- 2*(n_prec*n_recall)/(n_prec+n_recall)
-# nF1
-
-
-# #DT
-# library(rpart)
-# 
-# training_set$label1<-as.factor(training_set$label1)
-# t_classifier = rpart(formula = label1 ~.,
-#                      method = "class",
-#                    data = training_set)
-# t_pred = predict(t_classifier, newdata = test_set[-17],type = "class")
-# tcm = table(test_set$label1, t_pred)
-# tcm
-# 
-# t_prec<- tcm[2,2]/(tcm[1,2]+tcm[2,2])
-# t_recall<-tcm[2,2]/(tcm[2,1]+tcm[2,2])
-# tF1<- 2*(t_prec*t_recall)/(t_prec+t_recall)
-# tF1
-# t_accuracy<- sum(diag(tcm))/sum(tcm)
-# t_accuracy
