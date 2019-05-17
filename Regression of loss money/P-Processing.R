@@ -186,12 +186,15 @@ rm(dataset4)
 #################
 
 library(caTools)
-set.seed(456605)
+set.seed(345)
 split = sample.split(dataset, SplitRatio = 0.7)
 training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 
 mean(training_set$ROI)
+mean(testset$ROI)
+mean(training_set$NRR)
+mean(testset$NRR)
 L_train<-training_set[-c(33,36,37,39)]
 C_train<-training_set[-c(36,37,38,39)]
 
