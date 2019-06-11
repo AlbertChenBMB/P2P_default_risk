@@ -169,8 +169,8 @@ str(tra.dataset)
 dataset<-select(tra.dataset,c(1,2,3,4,6,7,8,9,10,
                               11,12,13,14,15,16,
                               17,18,19,20,21,22,
-                              23,24,25,26,27,28,29,30,31,32,33,36,
-                              37,38,40,41,42,35))
+                              23,24,25,26,27,28,29,30,31,32,33,
+                              37,38,39,41,42,36))
 rm(dataset1)
 rm(dataset2)
 rm(dataset3)
@@ -184,20 +184,27 @@ rm(dataset4)
 #1. all features <- L_train & testset
 #2. mRMR         <- m_L_train & m_testset
 #################
+names(dataset)[11]<-"verification_status_Not_Verified"
+names(dataset)[12]<-"verification_status_Source_Verified"
 
 library(caTools)
-set.seed(345)
+set.seed(3456345)
 split = sample.split(dataset, SplitRatio = 0.7)
 training_set = subset(dataset, split == TRUE)
 testset = subset(dataset, split == FALSE)
 
-mean(training_set$ROI)
-mean(testset$ROI)
 mean(training_set$NRR)
 mean(testset$NRR)
-L_train<-training_set[-c(33,36,37,39)]
-C_train<-training_set[-c(36,37,38,39)]
-
+L_train<-training_set[-c(36,38)]
+C_train<-training_set[-c(36,37)]
+# names(testset)[12]<-"verification_status_Source_Verified"
+# names(L_train)[12]<-"verification_status_Source_Verified"
+# names(L_train)[11]<-"verification_status_Not_Verified"
+# names(testset)[11]<-"verification_status_Not_Verified"
+# names(C_train)[12]<-"verification_status_Source_Verified"
+# names(C_train)[11]<-"verification_status_Not_Verified"
+# names(training_set)[12]<-"verification_status_Source_Verified"
+# names(training_set)[11]<-"verification_status_Not_Verified"
 ################################################################
 #for new feature selection
 #for featureselection 

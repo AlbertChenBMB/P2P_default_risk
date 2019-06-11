@@ -16,14 +16,22 @@ system.time(l_classifier <-glm(formula = NRR ~.,
                 data = L_train))
 summary(l_classifier)
 prob_pred = predict(l_classifier, type = 'response', 
-                    newdata = testset[-c(36:39)])
+                    newdata = testset[-c(33,36:39)])
 RMSE( testset[,38],prob_pred )
 l_pred = ifelse(prob_pred >= 0.5, 1, 0)
 t_r<-cbind(testset,l_pred)
+lcm = table(testset[, 33], l_pred)
+lcm
+sum(diag(lcm))/sum(lcm)
+N_A<-lcm[2,2]/(lcm[1,2]+lcm[2,2])
+P_A<-lcm[1,1]/(lcm[1,1]+lcm[2,1])
+GA<-sqrt(N_A*P_A)
+GA
+
+
 l_fullpay<-filter(t_r,t_r$l_pred==1)
 summary(l_fullpay$NRR)
-mean(l_fullpay$NRR)
-sd(l_fullpay$NRR)
+mean(l_fullpay$NRR)/sd(l_fullpay$NRR)
 mean(l_fullpay$ROI)
 nrow(l_fullpay)/nrow(testset)
 

@@ -13,6 +13,7 @@ accuracy<- sum(diag(ccm))/sum(ccm)
 accuracy
 N_A<-ccm[2,2]/(ccm[1,2]+ccm[2,2])
 P_A<-ccm[1,1]/(ccm[1,1]+ccm[2,1])
+
 GA<-sqrt(N_A*P_A)
 GA
 
@@ -63,12 +64,12 @@ library(keras)
 library(tensorflow)
 library(tibble)
 library(ggplot2)
-train_data<-as.matrix(L_train[1:35])
-train_labels<-as.matrix(L_train[36])
+train_data<-as.matrix(C_train[-33])
+train_labels<-as.matrix(L_train[33])
 train_df <- as_tibble(train_data)
 testset<-na.omit(testset)
-test_data<-as.matrix(testset[1:35])
-test_labels<-as.matrix(testset[37])
+test_data<-as.matrix(testset[-33])
+test_labels<-as.matrix(testset[33])
 #build model
 build_model <- function() {
   
